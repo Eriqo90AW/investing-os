@@ -4,17 +4,26 @@ import { ChartFrame, ChartSurface } from "../ChartFrame";
 import { compact, createThemedChart, type ChartTokens } from "~/lib/chart-theme";
 import { PORTFOLIO, type Point } from "~/lib/market-data";
 
-const HEIGHT = 260;
+const DEFAULT_HEIGHT = 260;
+
+export interface PortfolioAreaProps {
+  data?: Point[];
+  title?: string;
+  note?: string;
+  height?: number;
+}
 
 /**
  * One series, so there is no legend box — the title names it. The area fill is
  * the accent at low alpha fading to zero, which keeps the line itself the only
  * thing at full contrast.
  */
-export function PortfolioArea() {
+export function PortfolioArea(props: PortfolioAreaProps = {}) {
   let container: HTMLDivElement | undefined;
-  const first = PORTFOLIO[0]!;
-  const last = PORTFOLIO[PORTFOLIO.length - 1]!;
+  const data = () => props.data ?? PORTFOLIO;
+  const height = () => props.height ?? DEFAULT_HEIGHT;
+  const first = data()[0]!;
+  const last = data()[data().length - 1]!;
   const [hovered, setHovered] = createSignal<Point | null>(null);
 
   const shown = createMemo(() => hovered() ?? last);
@@ -22,10 +31,10 @@ export function PortfolioArea() {
 
   createThemedChart({
     container: () => container,
-    height: HEIGHT,
+    height: height(),
     build: (chart, t) => {
       const area = chart.addSeries(AreaSeries, areaColors(t));
-      area.setData(PORTFOLIO);
+      area.setData(data());
 
       const onMove = (param: MouseEventParams) => {
         if (!param.time) {
@@ -49,8 +58,8 @@ export function PortfolioArea() {
 
   return (
     <ChartFrame
-      title="Portfolio net asset value"
-      note="Single series, 180 days. Since inception, indexed in dollars rather than percent."
+      title={props.title ?? "Portfolio net asset value"}
+      note={props.note ?? "Single series, 180 days. Since inception, indexed in dollars rather than percent."}
       primaryValue={() => (
         <div class="text-400 font-700 tabular-nums">{compact(shown().value, "$")}</div>
       )}
@@ -64,9 +73,9 @@ export function PortfolioArea() {
       )}
     >
       <ChartSurface
-        height={HEIGHT}
+        height={height()}
         ref={el => (container = el)}
-        label="Portfolio net asset value over 180 days of sample data."
+        label={`${props.title ?? "Portfolio net asset value"} over ${data().length} days of sample data.`}
       />
     </ChartFrame>
   );

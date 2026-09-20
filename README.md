@@ -1,12 +1,11 @@
 # Investing OS
 
-A **design system for dense, numeric, market-facing screens** — and a running application
-that *is* the specification for it.
+A mock-data investment research dashboard backed by a design system for dense, numeric,
+market-facing screens.
 
-There is no Storybook, no separate docs site, and no static artifact to keep in sync. The
-app serves one page, at [`/design`](http://localhost:5180/design), and that page renders
-every token, component and chart in the system using the real components against the real
-tokens. If something is not on that page, it is not in the system.
+The product dashboard lives at [`/`](http://localhost:5180/). The living design-system
+reference remains at [`/design`](http://localhost:5180/design), where every token,
+component, and chart renders against the same code used by the dashboard.
 
 The palette is reverse-engineered from CoinMarketCap's shipped `:root` block (captured
 2026-09-19) and keeps their `--c-*` namespace, then departs from it in two deliberate
@@ -20,7 +19,8 @@ is how to run it; that file is what every value means.
 
 ```bash
 pnpm install
-pnpm dev          # http://localhost:5180/design
+pnpm dev          # dashboard: http://localhost:5180/
+                  # design system: http://localhost:5180/design
 ```
 
 **pnpm only.** `packageManager` pins `pnpm@11.22.0` for corepack and a `preinstall` guard
@@ -157,8 +157,11 @@ is what caught the dark accent failing the lightness band as a *mark* while bein
 |---|---|
 | `src/styles/tokens.css` | **Source of truth.** Every `--c-*` variable, all three theme states. |
 | `src/app.css` | The `@theme inline` mapping and base layer. The only Tailwind config. |
-| `src/routes/design.tsx` | The spec page — the design system itself. |
-| `src/routes/index.tsx` | A three-line redirect from `/` to `/design`. |
+| `src/routes/design.tsx` | The live design-system reference. |
+| `src/routes/index.tsx` | The mock-data Investing OS dashboard. |
+| `src/lib/dashboard-data.ts` | Typed dashboard contract and deterministic product fixtures. |
+| `src/components/dashboard/` | KPIs, market regime, AI preview, setup board, and signal radar. |
+| `src/components/navigation/` | Product navbar, command search, and market pulse strip. |
 | `src/lib/tokens.ts` | Typed mirror of the tokens, used to render the spec tables. |
 | `src/lib/theme.ts` | Three-state theme signal and the `.NIGHT` / `.DAY` stamp. |
 | `src/lib/chart-theme.ts` | The canvas bridge — samples tokens, builds chart options. |
@@ -173,7 +176,9 @@ is what caught the dark accent failing the lightness band as a *mark* while bein
 
 ### Sample data is fake, and deterministic on purpose
 
-Nothing here touches a live feed. The time-series charts run on a seeded `mulberry32`
+Nothing here touches a live feed. Dashboard components receive one typed fixture object
+from `src/lib/dashboard-data.ts`; a future live adapter can return that same shape without
+changing the component tree. The time-series charts run on a seeded `mulberry32`
 random walk so the SSR pass and the hydration pass produce byte-identical numbers — a
 `Math.random()` series would mismatch on hydration and flicker. The composition charts use
 hand-set figures instead, because those forms are judged on whether their *shape* is right
@@ -196,6 +201,7 @@ and strippable into a host that supplies its own document shell.
 ## Known gaps
 
 - **No tests and no linter.** `pnpm typecheck` is the only automated check in the repo.
-- **No backend.** Every figure on the page is a fixture; there is no data layer to swap in
-  yet.
-- **One route.** The design system is the product so far.
+- **No backend.** Every dashboard value is a labelled fixture. The typed dashboard
+  contract is the replacement point for a future API adapter.
+- **Preview agent only.** The composer and prompt flows are interactive, but no model or
+  retrieval service is connected yet.

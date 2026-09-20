@@ -9,10 +9,10 @@ export default function App() {
     <Router
       root={props => (
         <MetaProvider>
-          <Title>Investing OS Design System</Title>
+          <Title>Investing OS</Title>
           <Meta
             name="description"
-            content="Design tokens, components and TradingView chart specs for Investing OS."
+            content="Investment research, setup tracking, market signals, and agent-assisted analysis."
           />
           <Suspense>{props.children}</Suspense>
         </MetaProvider>
