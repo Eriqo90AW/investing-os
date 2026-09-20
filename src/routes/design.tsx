@@ -1,7 +1,11 @@
 import { clientOnly } from "@solidjs/start";
 import { Title } from "@solidjs/meta";
 import { initTheme } from "~/lib/theme";
+import { initPalette } from "~/lib/palette";
+import { initAccent } from "~/lib/accent";
 import { ThemeToggle } from "~/components/ThemeToggle";
+import { PaletteToggle } from "~/components/PaletteToggle";
+import { AccentPicker } from "~/components/AccentPicker";
 import { MarketTable } from "~/components/MarketTable";
 import {
   BadgesAndInputs,
@@ -76,6 +80,8 @@ const NAV = [
 
 export default function DesignSystemPage() {
   initTheme();
+  initPalette();
+  initAccent();
 
   return (
     <>
@@ -89,7 +95,7 @@ export default function DesignSystemPage() {
       >
         <div class="mx-auto max-w-[1280px] px-200 h-16 flex items-center gap-300">
           <div class="flex items-center gap-100 shrink-0">
-            <span class="grid place-items-center w-8 h-8 rounded-full bg-accent-fill text-on-accent font-700 text-100">
+            <span class="grid place-items-center w-8 h-8 rounded-full bg-secondary text-on-secondary font-700 text-100">
               IO
             </span>
             <span class="font-700 text-200 tracking-[-.01em]">Investing OS</span>
@@ -104,16 +110,18 @@ export default function DesignSystemPage() {
           </nav>
 
           <div class="ml-auto flex items-center gap-100">
+            <AccentPicker />
+            <PaletteToggle />
             <ThemeToggle />
             <button
               type="button"
-              class="hidden sm:inline-flex items-center h-9 px-200 rounded-100 text-100 font-600 text-ink hover:bg-surface-2 transition cursor-pointer"
+              class="hidden sm:inline-flex shrink-0 items-center h-9 px-200 rounded-100 whitespace-nowrap text-100 font-600 text-ink hover:bg-surface-2 transition cursor-pointer"
             >
               Log In
             </button>
             <button
               type="button"
-              class="inline-flex items-center h-9 px-200 rounded-100 text-100 font-600 text-on-accent bg-accent-fill hover:bg-accent-fill-hover transition cursor-pointer"
+              class="inline-flex shrink-0 items-center h-9 px-200 rounded-100 whitespace-nowrap text-100 font-600 text-on-accent bg-accent-fill hover:bg-accent-fill-hover transition cursor-pointer"
             >
               Sign Up
             </button>
@@ -204,7 +212,7 @@ export default function DesignSystemPage() {
               </li>
               <li>
                 <b class="text-ink">Green and red are reserved for direction.</b> They
-                never appear as categorical series colors; the four chart slots are orange,
+                never appear as categorical series colors; the four chart slots are accent,
                 blue, teal and purple for exactly that reason.
               </li>
               <li>
@@ -391,8 +399,9 @@ series: [1, 2, 3, 4].map(n =>
                 glyph is part of the component, and screen readers get "up" / "down".
               </li>
               <li>
-                <b class="text-ink">Orange is the only accent.</b> Links, primary buttons,
-                active tab, focus ring, chart slot 1 — nothing else competes.
+                <b class="text-ink">There is exactly one accent.</b> Links, primary
+                buttons, active tab, focus ring, chart slot 1 — all one hue, whichever one
+                the accent axis resolves to, and nothing else competes.
               </li>
               <li>
                 <b class="text-ink">Don't hardcode a gray.</b> The ramp inverts between

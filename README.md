@@ -48,19 +48,40 @@ Tailwind CSS v4 · TradingView Lightweight Charts v5.
 twice.**
 
 ```
-src/styles/tokens.css      the --c-* variables, in three theme states
-        ↓                  (light · system-dark · explicit toggle)
-src/app.css                @theme inline — maps them into Tailwind by reference
+src/styles/tokens.css            the --c-* variables, in three theme states
+        ↓                        (light · system-dark · explicit toggle)
+src/styles/palette-rustic.css    the same names, different values, under
+src/styles/palette-midnight.css  [data-palette="…"]
+src/styles/accents.css           the accent hue only, under [data-accent="…"]
+        ↓                        (last import wins — keep it last)
+src/app.css                      @theme inline — maps them into Tailwind by reference
         ↓
-bg-surface-1               already correct in both themes, no `dark:` variant
+bg-surface-1                     already correct in every theme × palette, no `dark:` variant
 ```
 
 Because the `@theme` mapping is `inline`, every Tailwind utility emits a `var()` rather
 than a resolved hex. That is why this codebase has essentially **no `dark:` variants**:
 `bg-surface-1` is a variable lookup, and the variable already knows which theme it is in.
 
-Three consequences worth knowing before you edit anything:
+Five consequences worth knowing before you edit anything:
 
+- **Palette is a second axis, orthogonal to light/dark.** Light/dark picks the ground;
+  palette picks the values that ground uses. Both stamp `<html>`; no component knows
+  either exists. **Ember** (the default, burnt orange on warm neutrals) is the bare
+  `:root`; **Rustic Charm** (spicy paprika on floral white, dust grey, carbon black) and
+  **Midnight Sky** (princeton orange over indigo ink and platinum) live under
+  `[data-palette="…"]` and override *values only* — never names, never roles, never a
+  contrast guarantee. Adding a palette is one stylesheet plus one row in
+  `src/lib/palette.ts`; if it needs a component change, the palette is wrong, or the
+  component is. See `design/DESIGN_SYSTEM.md` §2.5.
+- **Accent is a third axis, narrower still.** A palette decides what the page is made of;
+  an accent decides only what it *points with* — the brand ramp, the four `accent-*`
+  tokens, links, `official`, chart slot 1 and its area gradient, and nothing else. Seven
+  options ship (Ember, Paprika, Princeton, Cornflower, Teal, Violet, plus the palette's
+  own). An accent whose hue was already a chart slot pushes that slot onto the warm hue,
+  so the categorical set stays four CVD-separable colours in every combination. The ramp
+  is `--c-color-brand-*` — it was `--c-color-orange-*` until the accent stopped always
+  being orange. See §2.6.
 - **The gray ramp inverts.** `gray-100` always means *closest to the background* and
   `gray-600` *closest to the text* — in both themes. The hex values physically swap ends.
   Never hardcode a gray.
@@ -106,8 +127,10 @@ is what caught the dark accent failing the lightness band as a *mark* while bein
 
 ## Rules the code actually enforces
 
-- **Orange is the only accent.** Links, primary buttons, the active tab, the focus ring,
-  chart slot 1. Blue exists but is data-only — nothing blue in this system is clickable.
+- **There is exactly one accent.** Links, primary buttons, the active tab, the focus ring,
+  chart slot 1 — all the same hue, whichever hue the accent axis resolves to, and nothing
+  else competes. Every other hue in the system is data-only, so nothing that isn't the
+  accent is clickable.
 - **Green and red are reserved for direction.** They never appear as decoration or as a
   categorical series. If something is green here, it went up.
 - **Never encode direction with colour alone.** The `▲` / `▼` glyph is part of the

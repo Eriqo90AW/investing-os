@@ -9,6 +9,8 @@ import {
   type IChartApi,
 } from "lightweight-charts";
 import { resolved } from "./theme";
+import { palette } from "./palette";
+import { accentHex } from "./accent";
 
 /**
  * Lightweight Charts paints to canvas, so it cannot read CSS variables the way
@@ -55,10 +57,10 @@ export function readChartTokens(): ChartTokens {
     downFill: read(s, "--c-chart-down-fill", "rgba(234,57,67,0.16)"),
     volumeUp: read(s, "--c-chart-volume-up", "rgba(22,199,132,0.5)"),
     volumeDown: read(s, "--c-chart-volume-down", "rgba(234,57,67,0.5)"),
-    areaTop: read(s, "--c-chart-area-top", "rgba(194,65,12,0.24)"),
-    areaBottom: read(s, "--c-chart-area-bottom", "rgba(194,65,12,0)"),
+    areaTop: read(s, "--c-chart-area-top", "rgba(100,152,0,0.24)"),
+    areaBottom: read(s, "--c-chart-area-bottom", "rgba(100,152,0,0)"),
     series: [
-      read(s, "--c-chart-series-1", "#C2410C"),
+      read(s, "--c-chart-series-1", "#649800"),
       read(s, "--c-chart-series-2", "#3861FB"),
       read(s, "--c-chart-series-3", "#0F91A8"),
       read(s, "--c-chart-series-4", "#8A3FFC"),
@@ -177,7 +179,7 @@ export function createThemedChart(config: ThemedChartConfig): void {
 
   createEffect(
     on(
-      resolved,
+      [resolved, palette, accentHex],
       () => {
         if (!chart || !built) return;
         const tokens = readChartTokens();

@@ -20,8 +20,8 @@ export const SENTIMENT_BANDS = [
   },
   {
     label: "Fear",
-    color: "var(--c-color-orange-400)",
-    badge: "var(--c-color-orange-500)",
+    color: "var(--c-color-brand-400)",
+    badge: "var(--c-color-brand-500)",
     ink: "var(--c-chart-label-on-dark)",
     to: 45,
   },

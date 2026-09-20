@@ -23,11 +23,12 @@ every decision in it:
    entirely on price direction.
 2. **Green and red are reserved.** `positive` / `negative` never appear as decoration.
    If something is green in this system, it went up.
-3. **Orange is the only accent.** `#C2410C` carries every interactive affordance — links,
-   primary buttons, the active tab underline, focus rings, chart slot 1. Nothing else
-   competes. It is deliberately a *deep* orange: it is the only hue that ever sits under
-   white text, and white clears 4.5:1 on it (5.2:1). Blue is demoted to a data-only hue
-   (chart slot 2), so nothing blue in this system is clickable.
+3. **There is exactly one accent.** One hue carries every interactive affordance — links,
+   primary buttons, the active tab underline, focus rings, chart slot 1 — and nothing else
+   competes. *Which* hue is the accent axis (§2.6); the default is a deep burnt orange
+   `#C2410C`, deliberately deep because it is the only hue that ever sits under `on-accent`
+   text and has to clear 4.5:1 there (5.2:1). Every other hue is data-only, so nothing that
+   isn't the accent is clickable.
 4. **Gray is positional, not absolute.** `gray-100` always means "closest to the
    background" and `gray-600` always means "closest to the text", in *both* themes. The
    ramp physically inverts between light and dark (see §2.2).
@@ -45,7 +46,7 @@ every decision in it:
 Each hue runs `100 → 800`, light to dark. `500` is the "original" brand step; `400` is
 `-light`, `600` is `-dark`, `700` is `-black`, `800` is a dark-theme surface tint.
 
-| Step | Orange | Blue | Green | Red | Purple | Teal | Beige |
+| Step | Brand | Blue | Green | Red | Purple | Teal | Beige |
 |------|--------|------|-------|-----|--------|------|-------|
 | 100 | `#FFF4EC` | `#F0F6FF` | `#DEFBF0` | `#FCE6E8` | `#F6F0FF` | `#E8FAFD` | `#FDF4EA` |
 | 200 | `#FED7AA` | `#DDE4FD` | `#C3F8E4` | `#F8BABD` | `#E7D7FE` | `#B9EFF9` | `#FCEDDE` |
@@ -56,9 +57,10 @@ Each hue runs `100 → 800`, light to dark. `500` is the "original" brand step; 
 | 700 | `#7C2D12` | `#0728A1` | `#0D734C` | `#981018` | `#4103A1` | `#0C7487` | `#BD650F` |
 | 800 | `#3A2118` | `#1E274F` | `#173C37` | `#411F2A` | `#25015A` | `#084854` | `#433936` |
 
-The orange ramp breaks the usual "500 is the mid step" reading on purpose. `500` is the
-accent as a **ground** (white text on it), `400` is the accent as **ink** on a dark
-ground, and `100`/`800` are the light and dark badge tints.
+The brand ramp breaks the usual "500 is the mid step" reading on purpose. `500` is the
+accent as a **ground** (`on-accent` text on it), `400` is the accent as **ink** on a dark
+ground, and `100`/`800` are the light and dark badge tints. The table shows Ember's
+values; the ramp holds whatever the palette and accent axes resolve to (§2.5, §2.6).
 
 Two one-off brand colors sit outside the ramps: `--c-color-azure: #486DF7` and
 `--c-color-teal: #23DCF5`.
@@ -96,19 +98,19 @@ reading brown rather than black.
 | `text-secondary` | `#766B64` | `#AFA6A0` |
 | `text-caption` | `#B7AEA8` | `#736A63` |
 | `text-hyperlink` | `#C2410C` | `#F97316` |
-| `accent` (ink) | `orange-500` | `orange-400` |
+| `accent` (ink) | `brand-500` | `brand-400` |
 | `accent-fill` / `on-accent` | `#C2410C` / `#FFF` | `#C2410C` / `#FFF` |
 | `positive` | `#16C784` | `#16C784` |
 | `negative` | `#EA3943` | `#EA3943` |
 | `positive-bg` | `green-100` | `green-800` |
 | `negative-bg` | `red-100` | `red-800` |
-| `official` / `official-bg` | `#C2410C` / `orange-100` | `#F97316` / `orange-800` |
+| `official` / `official-bg` | `#C2410C` / `brand-100` | `#F97316` / `brand-800` |
 | `reminder` / `reminder-bg` | `#F5B97F` / `beige-100` | `#F5B97F` / `#433936` |
 | `no-access` / `no-access-bg` | `#948A84` / `gray-200` | `#948A84` / `gray-200` |
 | `overlay-bg` | `rgba(88,102,126,.6)` | `rgba(23,25,36,.6)` |
 
 **Dark slot 1 is `#EA580C`, not the `accent` ink step.** The dataviz lightness band for a
-dark surface tops out at OKLCH L 0.67 and `orange-400` sits at 0.705, so it fails as a
+dark surface tops out at OKLCH L 0.67 and `brand-400` sits at 0.705, so it fails as a
 *mark* even though it is correct as *text*. The two jobs have different bands; the tokens
 are allowed to differ.
 
@@ -130,6 +132,153 @@ resolve correctly:
 
 :root[data-theme="dark"], :root.NIGHT { /* dark overrides */ }
 ```
+
+### 2.5 Palette switching (the second axis)
+
+Light/dark answers *which ground*. Palette answers *which values that ground uses*. The
+two are independent, both stamp `<html>`, and no component is aware of either — a palette
+overrides **values only**, never names, so every rule in this document still holds under
+each one.
+
+| Palette | Attribute | Where it lives |
+|---|---|---|
+| **Ember** (default) | *(none — the bare `:root`)* | `src/styles/tokens.css` |
+| **Rustic Charm** | `data-palette="rustic"` | `src/styles/palette-rustic.css` |
+| **Midnight Sky** | `data-palette="midnight"` | `src/styles/palette-midnight.css` |
+
+`src/lib/palette.ts` holds the signal and the stamp (mirroring `theme.ts`, storage key
+`ios-palette`); `PaletteToggle` is the control. Both the canvas bridge and the spec page's
+live hex readouts key off `palette()` as well as `resolved()`, so a swap re-samples
+everything.
+
+Specificity is load-bearing. Base dark is `(0,3,0)`, so a rustic **light** block at
+`(0,2,0)` deliberately loses to it, and the rustic **dark** block is written at `(0,4,0)`
+to win. That is why the rustic dark block mirrors the base dark block token for token
+rather than overriding only what differs.
+
+#### Rustic Charm
+
+Source: floral white `#FFFCF2` · dust grey `#CCC5B9` · charcoal brown `#403D39` · carbon
+black `#252422` · spicy paprika `#EB5E28`.
+
+Five colours do not make a design system. Two gaps had to be covered explicitly:
+
+1. **Ramps.** Paprika is extended into the full 8-step accent ramp (tinting toward floral
+   white, shading toward carbon black); the neutrals are interpolated along the
+   floral-white → dust-grey → charcoal → carbon axis, each step keeping its predecessor's
+   contrast role.
+2. **Direction.** The palette has no green and no red. Price direction is not a style
+   choice, so `positive` / `negative` and the diverging ramp are untouched — only the
+   neutral midpoint moves onto the warm gray. Chart slots 2–4 (blue/teal/purple) also
+   stay, because four CVD-separable categoricals cannot come out of one hue family.
+
+The accent ramp keeps the same contract the orange ramp has, with one wrinkle:
+
+| Step | Value | Job |
+|---|---|---|
+| 400 | `#F2794A` | Accent as **ink** on a dark ground — 5.5:1 on carbon black |
+| 500 | `#CA4713` | Accent as **ink** on the light ground (4.6:1) *and* as `accent-fill` under `on-accent` (4.6:1) |
+| — | `#EB5E28` | The source swatch, as `--c-color-paprika`. 3.4:1 under white, so it is **fills only**: chart slot 1 in dark, sequential step 2, area gradients. Never under text. |
+
+One structural difference from Ember: there, cards are pure white lifting off a near-white
+ground. Here the ground is the warmer step (`#F9F6EA`) and floral white is the *card*, so
+surfaces lift toward the light rather than away from it. Dark-mode ink is floral white
+rather than `#FFFFFF`, and secondary text is dust grey at 9.1:1.
+
+#### Midnight Sky
+
+Source: indigo ink `#4329D6` · cornflower blue `#042DFB` · periwinkle `#0320FC` ·
+platinum `#636F9C` · princeton orange `#FF8800`.
+
+Three things had to be decided rather than transcribed:
+
+1. **Three blues, one hue.** Indigo ink, cornflower and periwinkle are near-identical in
+   hue. Spent as three roles they would collapse into each other, so they are spent as a
+   **depth axis**: indigo ink is the dark ground stack, cornflower is the data blue
+   (slot 2), periwinkle is folded into the sequential ramp. Nothing collides, nothing is
+   wasted.
+2. **The button inverts.** Princeton orange is 2.4:1 under white and still only 3.7:1 at
+   its 600 step — it is not an ink and it cannot take white text. It *is* 7.5:1 under
+   platinum-900, so the primary button becomes a **bright orange ground under near-black
+   ink**. That is the palette's signature and the one place a component's ink polarity
+   differs from the other two palettes — which is why `on-accent` is a token and not a
+   hardcoded `#fff`.
+3. **Neutrals change family per theme.** Platinum carries the light ramp; in dark mode the
+   neutrals move onto the indigo axis instead. A midnight UI whose greys are actually grey
+   throws away the idea.
+
+| Step | Value | Job |
+|---|---|---|
+| 400 | `#FFA033` | Accent as **ink** on the dark ground — 9.5:1 on indigo. Dark is the hero theme here. |
+| 500 | `#995200` | Accent as **ink** on the light ground — 5.9:1 |
+| — | `#FF8800` | The source swatch, as `--c-color-princeton`. The `accent-fill`, under `#14161F` ink at 7.5:1 (4.9:1 on hover). |
+
+Chart slot 2 becomes cornflower `#3657FC` (light) / `#6881FD` (dark); slots 3 and 4 are
+untouched, because four CVD-separable categoricals cannot be cut out of one blue-violet
+family. Warnings move to a muted gold ramp — deliberately desaturated and yellower than
+the accent, so "unaudited" never reads as "primary action".
+
+### 2.6 Accent switching (the third axis)
+
+A palette decides what the page is made of. An accent decides only what the page *points
+with*, so it changes independently of the palette under it. Unlike the other two axes this
+one is **open**: any colour, not a menu. No stored colour means "whatever the palette
+chose", which is why the default costs nothing.
+
+**The picked colour is never used raw.** `src/lib/accent-derive.ts` reads it into OKLCH and
+solves a complete accent from it; `src/lib/accent.ts` writes the result to `<html>` as
+inline custom properties and stamps `data-accent="custom"`. Inline beats every stylesheet,
+which is what an override that must work under any palette needs.
+
+**An accent owns six things and nothing else:** the brand ramp; `accent` / `accent-fill` /
+`accent-fill-hover` / `on-accent`; `text-hyperlink` and `official`; chart slot 1; the
+area-gradient pair; and the slot it displaces. Everything else — grounds, neutrals,
+direction colours, the sequential and diverging ramps, warnings — belongs to the palette
+and does not move.
+
+#### What gets solved, and against what
+
+| Step | Solved as | Floor |
+|---|---|---|
+| `brand-500` (ink, light) | the **highest** lightness that still clears the floor | 4.5:1 on `#EFF1F5` |
+| `brand-400` (ink, dark) | the **lowest** lightness that still clears the floor | 4.5:1 on `#2F2D2A` |
+| `accent-fill` | the picked colour itself, if either label ink clears 4.5:1 on it; otherwise `brand-500` | 4.5:1 |
+| `on-accent` | whichever label ink wins on that fill | 4.5:1 |
+| chart slot 1 (light) | a *mark*, not text | 3:1 on `#FFFFFF` |
+| chart slot 1 (dark) | ditto, capped at OKLCH L 0.67 | 3:1 on `#2F2D2A` |
+| `brand-100/200/300/600/700/800` | fixed lightness targets, forced monotonic around the solved pair | — |
+
+Both ink floors are measured against **the worst ground any palette offers**, not a
+convenient one, so a derived accent is valid under every palette rather than only the one
+on screen. Extremes are solved, not chosen: a colour is darkened only as far as it has to
+be, which is why a deep burnt orange comes back essentially unchanged.
+
+**The fill is tried before it is replaced.** If either label ink clears 4.5:1 on the picked
+colour, it survives intact — that is how a bright `#FF8800` stays bright instead of being
+darkened into a link colour, and it is also why `on-accent` is a token rather than a
+hardcoded `#fff`: that fill takes *dark* ink. Only when neither ink works does the fill
+fall back to the solved `500` step.
+
+**Gamut.** Steps are rendered by reducing chroma until the colour fits sRGB, never by
+clipping channels — clipping shifts the hue, which is the one thing a ramp cannot afford.
+
+**Displacement.** Slot 1 always follows the accent, so an accent landing within 30° of an
+existing chart slot pushes that slot onto the hue the accent just vacated — the warm one.
+Blue accent → slot 2 goes warm, teal → slot 3, violet → slot 4. The derivation stamps
+`data-accent-displaces`; the backfill is fixed and lives in `accents.css`. The categorical
+set stays four CVD-separable hues in every palette × accent combination.
+
+**Reserved hues are flagged, not blocked.** An accent within 12° of `positive` or
+`negative` passes every contrast floor but makes a link look like a gain or a loss, so the
+spec page says so and lets you decide. The threshold is tighter than the 30° used for slot
+collision because the shipped burnt orange sits 15° off `negative` and must not trip it.
+
+**Near-neutral picks are left alone.** Below OKLCH chroma 0.015 the hue angle is rounding
+noise; amplifying it would invent a colour nobody chose, so a grey pick yields a grey ramp.
+
+**Naming.** The accent ramp is `--c-color-brand-100…800`. It was called
+`--c-color-orange-*` while orange was the only accent; a ramp named *orange* holding teal
+would be a lie, so it was renamed when this axis landed.
 
 ---
 

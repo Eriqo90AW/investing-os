@@ -41,18 +41,17 @@
   --c-color-red-700: #981018;
   --c-color-red-800: #411f2a;
 
-  /* The accent ramp. Step 500 is deliberately a deep burnt orange rather than
-     a mid one: it is the only hue that ever sits under white text, and white
-     needs 4.5:1 on it (#c2410c gives 5.2:1). Step 400 is the light-on-dark
-     counterpart — it never takes white text, it *is* the text. */
-  --c-color-orange-100: #fff4ec;
-  --c-color-orange-200: #fed7aa;
-  --c-color-orange-300: #fdba74;
-  --c-color-orange-400: #f97316;
-  --c-color-orange-500: #c2410c;
-  --c-color-orange-600: #9a3412;
-  --c-color-orange-700: #7c2d12;
-  --c-color-orange-800: #3a2118;
+  /* The default secondary ramp, generated from #99e50b. The bright source
+     colour is reserved for fills with dark ink. Steps 400 and 500 are the
+     contrast-safe text colours for dark and light surfaces. */
+  --c-color-brand-100: #eef9e3;
+  --c-color-brand-200: #cdecb0;
+  --c-color-brand-300: #adda7d;
+  --c-color-brand-400: #6da600;
+  --c-color-brand-500: #4d7800;
+  --c-color-brand-600: #3c5e00;
+  --c-color-brand-700: #2f4b00;
+  --c-color-brand-800: #162600;
 
   --c-color-purple-100: #f6f0ff;
   --c-color-purple-200: #e7d7fe;
@@ -83,6 +82,8 @@
 
   --c-color-azure: #486df7;
   --c-color-teal-brand: #23dcf5;
+  --c-color-secondary: #99e50b;
+  --c-color-on-secondary: #14161f;
 
   /* --- gray ramp: LIGHT (100 = nearest background, 600 = nearest ink) -----
      Warm, not cool. Every step was rotated to OKLCH hue 55 at its original
@@ -105,23 +106,23 @@
   --c-color-text-primary: #19130f;
   --c-color-text-secondary: #766b64;
   --c-color-text-caption: #b7aea8;
-  --c-color-text-hyperlink: #c2410c;
+  --c-color-text-hyperlink: #4d7800;
   /* --- accent ------------------------------------------------------------
      Two forms, because one value cannot do both jobs. `accent` is the accent
      as *ink* — it must clear 4.5:1 on the page ground, so it re-steps per
      theme. `accent-fill` is the accent as a *ground* under `on-accent` ink;
      it stays put across themes so a primary button is the same button in
      both. ---------------------------------------------------------------- */
-  --c-color-accent: var(--c-color-orange-500);
-  --c-color-accent-fill: #c2410c;
-  --c-color-accent-fill-hover: #9a3412;
-  --c-color-on-accent: #ffffff;
+  --c-color-accent: var(--c-color-brand-500);
+  --c-color-accent-fill: #99e50b;
+  --c-color-accent-fill-hover: #b5ff53;
+  --c-color-on-accent: var(--c-chart-label-ink);
   --c-color-positive: #16c784;
   --c-color-negative: #ea3943;
   --c-color-positive-bg: var(--c-color-green-100);
   --c-color-negative-bg: var(--c-color-red-100);
-  --c-color-official: #c2410c;
-  --c-color-official-bg: var(--c-color-orange-100);
+  --c-color-official: #4d7800;
+  --c-color-official-bg: var(--c-color-brand-100);
   --c-color-reminder: #f5b97f;
   --c-color-reminder-bg: var(--c-color-beige-100);
   --c-color-no-access: #948a84;
@@ -136,7 +137,7 @@
      contrast vs surface). Green/red are NOT in this set — they are reserved
      for price direction and must never stand in for "series 5".
      ---------------------------------------------------------------------- */
-  --c-chart-series-1: #c2410c; /* orange-500 */
+  --c-chart-series-1: #649800; /* secondary lime */
   --c-chart-series-2: #3861fb; /* blue-500   */
   --c-chart-series-3: #0f91a8; /* teal-600   */
   --c-chart-series-4: #8a3ffc; /* purple-500 */
@@ -150,8 +151,8 @@
   --c-chart-down-fill: rgb(234 57 67 / 0.16);
   --c-chart-volume-up: rgb(22 199 132 / 0.5);
   --c-chart-volume-down: rgb(234 57 67 / 0.5);
-  --c-chart-area-top: rgb(194 65 12 / 0.24);
-  --c-chart-area-bottom: rgb(194 65 12 / 0);
+  --c-chart-area-top: rgb(100 152 0 / 0.24);
+  --c-chart-area-bottom: rgb(100 152 0 / 0);
 
   /* --- magnitude & polarity ramps: LIGHT -------------------------------
      Categorical answers "which one"; these two answer "how much" and "which
@@ -184,7 +185,7 @@
   --c-chart-label-ink: #19130f;
   --c-chart-label-on-dark: #ffffff;
 
-  --c-chart-on-series-1: var(--c-chart-label-on-dark);
+  --c-chart-on-series-1: var(--c-chart-label-ink);
   --c-chart-on-series-2: var(--c-chart-label-on-dark);
   --c-chart-on-series-3: var(--c-chart-label-ink);
   --c-chart-on-series-4: var(--c-chart-label-on-dark);
@@ -273,20 +274,20 @@
     --c-color-text-primary: #ffffff;
     --c-color-text-secondary: #afa6a0;
     --c-color-text-caption: #736a63;
-    --c-color-text-hyperlink: #f97316;
-    --c-color-accent: var(--c-color-orange-400);
-    --c-color-official: var(--c-color-orange-400);
+    --c-color-text-hyperlink: #6da600;
+    --c-color-accent: var(--c-color-brand-400);
+    --c-color-official: var(--c-color-brand-400);
     --c-color-positive-bg: var(--c-color-green-800);
     --c-color-negative-bg: var(--c-color-red-800);
-    --c-color-official-bg: var(--c-color-orange-800);
+    --c-color-official-bg: var(--c-color-brand-800);
     --c-color-reminder-bg: #433936;
     --c-color-overlay-bg: rgb(33 24 18 / 0.6);
     --c-shadow-tiny: 0 1px 2px rgb(29 17 9 / 0.24), 0 4px 24px rgb(29 17 9 / 0.12);
     --c-shadow-overlay: 0 8px 32px #1d1109, 0 1px 2px #1d1109;
 
-    /* Not orange-400: the dataviz lightness band for a dark surface tops out
-       at OKLCH L 0.67 and orange-400 sits at 0.705. This step passes. */
-    --c-chart-series-1: #ea580c;
+    /* The chart mark is darker than the fill so it stays inside the dataviz
+       lightness band and remains legible on both surface themes. */
+    --c-chart-series-1: #649800;
     --c-chart-series-2: #6188ff; /* blue-400   */
     --c-chart-series-3: #0f91a8;
     --c-chart-series-4: #8a3ffc;
@@ -294,8 +295,8 @@
     --c-chart-grid: #41332a;
     --c-chart-axis-text: #afa6a0;
     --c-chart-crosshair: #736a63;
-    --c-chart-area-top: rgb(234 88 12 / 0.28);
-    --c-chart-area-bottom: rgb(234 88 12 / 0);
+    --c-chart-area-top: rgb(100 152 0 / 0.28);
+    --c-chart-area-bottom: rgb(100 152 0 / 0);
 
     --c-chart-seq-1: #8e4210;
     --c-chart-seq-2: #b25418;
@@ -345,18 +346,18 @@
   --c-color-text-primary: #ffffff;
   --c-color-text-secondary: #afa6a0;
   --c-color-text-caption: #736a63;
-  --c-color-text-hyperlink: #f97316;
-  --c-color-accent: var(--c-color-orange-400);
-  --c-color-official: var(--c-color-orange-400);
+  --c-color-text-hyperlink: #6da600;
+  --c-color-accent: var(--c-color-brand-400);
+  --c-color-official: var(--c-color-brand-400);
   --c-color-positive-bg: var(--c-color-green-800);
   --c-color-negative-bg: var(--c-color-red-800);
-  --c-color-official-bg: var(--c-color-orange-800);
+  --c-color-official-bg: var(--c-color-brand-800);
   --c-color-reminder-bg: #433936;
   --c-color-overlay-bg: rgb(33 24 18 / 0.6);
   --c-shadow-tiny: 0 1px 2px rgb(29 17 9 / 0.24), 0 4px 24px rgb(29 17 9 / 0.12);
   --c-shadow-overlay: 0 8px 32px #1d1109, 0 1px 2px #1d1109;
 
-  --c-chart-series-1: #ea580c;
+  --c-chart-series-1: #649800;
   --c-chart-series-2: #6188ff;
   --c-chart-series-3: #0f91a8;
   --c-chart-series-4: #8a3ffc;
@@ -364,8 +365,8 @@
   --c-chart-grid: #41332a;
   --c-chart-axis-text: #afa6a0;
   --c-chart-crosshair: #736a63;
-  --c-chart-area-top: rgb(234 88 12 / 0.28);
-  --c-chart-area-bottom: rgb(234 88 12 / 0);
+  --c-chart-area-top: rgb(100 152 0 / 0.28);
+  --c-chart-area-bottom: rgb(100 152 0 / 0);
 
   --c-chart-seq-1: #8e4210;
   --c-chart-seq-2: #b25418;

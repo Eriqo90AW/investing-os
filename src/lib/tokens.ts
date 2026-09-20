@@ -4,14 +4,15 @@
  * CSS variable so it stays theme-correct.
  */
 
-export type Hue = "orange" | "blue" | "green" | "red" | "purple" | "teal" | "beige";
+export type Hue = "brand" | "blue" | "green" | "red" | "purple" | "teal" | "beige";
 
-export const HUES: Hue[] = ["orange", "blue", "green", "red", "purple", "teal", "beige"];
+export const HUES: Hue[] = ["brand", "blue", "green", "red", "purple", "teal", "beige"];
 export const RAMP_STEPS = [100, 200, 300, 400, 500, 600, 700, 800] as const;
 
 export const HUE_NOTES: Record<Hue, string> = {
-  orange: "The only accent. Links, primary buttons, active tab, focus ring, chart slot 1.",
-  blue: "Categorical slot 2. Never an affordance — a blue thing here is data, not a link.",
+  brand:
+    "The accent ramp — whichever hue the accent axis is set to. Links, primary buttons, active tab, focus ring, chart slot 1.",
+  blue: "Categorical slot 2 — data, not a link, unless the accent axis is itself blue.",
   green: "Reserved: price up. Never decoration, never a categorical series.",
   red: "Reserved: price down. Never decoration, never a categorical series.",
   purple: "Categorical slot 4. Also used for staking/derivatives surfaces.",
@@ -48,7 +49,7 @@ export const GRAY_ROLES: Record<number, string> = {
   200: "hairline",
   300: "disabled border",
   400: "caption text",
-  500: "icon default",
+  500: "neutral icon, disabled",
   600: "secondary text",
 };
 
@@ -71,7 +72,7 @@ export const SEMANTIC_TOKENS: SemanticToken[] = [
 export const STATUS_TOKENS: SemanticToken[] = [
   { name: "positive", cssVar: "--c-color-positive", light: "#16C784", dark: "#16C784", role: "price up" },
   { name: "negative", cssVar: "--c-color-negative", light: "#EA3943", dark: "#EA3943", role: "price down" },
-  { name: "official", cssVar: "--c-color-official", light: "#C2410C", dark: "#F97316", role: "verified" },
+  { name: "official", cssVar: "--c-color-official", light: "#4D7800", dark: "#6DA600", role: "verified" },
   { name: "reminder", cssVar: "--c-color-reminder", light: "#F5B97F", dark: "#F5B97F", role: "unaudited" },
   { name: "no-access", cssVar: "--c-color-no-access", light: "#948A84", dark: "#948A84", role: "gated" },
 ];
@@ -80,7 +81,7 @@ export const TEXT_TOKENS: SemanticToken[] = [
   { name: "text-primary", cssVar: "--c-color-text-primary", light: "#19130F", dark: "#FFFFFF", role: "body ink" },
   { name: "text-secondary", cssVar: "--c-color-text-secondary", light: "#766B64", dark: "#AFA6A0", role: "labels, axes" },
   { name: "text-caption", cssVar: "--c-color-text-caption", light: "#B7AEA8", dark: "#736A63", role: "meta only" },
-  { name: "text-hyperlink", cssVar: "--c-color-text-hyperlink", light: "#C2410C", dark: "#F97316", role: "links" },
+  { name: "text-hyperlink", cssVar: "--c-color-text-hyperlink", light: "#4D7800", dark: "#6DA600", role: "links" },
 ];
 
 export interface TypeStep {
@@ -129,7 +130,7 @@ export const RADIUS_SCALE = [
  * Categorical chart slots. Validated with the six checks (lightness band,
  * chroma floor, CVD separation, normal-vision floor, contrast vs surface)
  * against #FFFFFF and #222531 — all pass. Slot 2 is blue rather than amber
- * because slot 1 now carries the orange accent, and orange↔amber collapses
+ * because slot 1 always carries the accent, and accent↔amber collapses
  * under every CVD model. Worst adjacent pair is purple↔teal at ΔE 16.2
  * (deutan), comfortably above the ΔE 8 target.
  *
@@ -144,7 +145,7 @@ export interface SeriesSlot {
 }
 
 export const SERIES_SLOTS: SeriesSlot[] = [
-  { slot: 1, cssVar: "--c-chart-series-1", hue: "orange", light: "#C2410C", dark: "#EA580C" },
+  { slot: 1, cssVar: "--c-chart-series-1", hue: "accent", light: "#649800", dark: "#649800" },
   { slot: 2, cssVar: "--c-chart-series-2", hue: "blue", light: "#3861FB", dark: "#6188FF" },
   { slot: 3, cssVar: "--c-chart-series-3", hue: "teal", light: "#0F91A8", dark: "#0F91A8" },
   { slot: 4, cssVar: "--c-chart-series-4", hue: "purple", light: "#8A3FFC", dark: "#8A3FFC" },

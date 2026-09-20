@@ -1,5 +1,9 @@
 @import "tailwindcss";
 @import "./styles/tokens.css";
+@import "./styles/palette-rustic.css";
+@import "./styles/palette-midnight.css";
+/* Accents override palettes and must stay last. */
+@import "./styles/accents.css";
 
 /* ===========================================================================
    Tailwind theme — `inline` so every utility emits var() and follows the
@@ -17,7 +21,9 @@
   --color-link: var(--c-color-text-hyperlink);
   --color-line: var(--c-color-gray-200);
   --color-hairline: var(--c-color-gray-300);
-  --color-icon: var(--c-color-gray-500);
+  --color-icon: var(--c-color-secondary);
+  --color-secondary: var(--c-color-secondary);
+  --color-on-secondary: var(--c-color-on-secondary);
 
   --color-pos: var(--c-color-positive);
   --color-neg: var(--c-color-negative);
@@ -38,13 +44,13 @@
   --color-accent-fill-hover: var(--c-color-accent-fill-hover);
   --color-on-accent: var(--c-color-on-accent);
 
-  --color-brand-100: var(--c-color-orange-100);
-  --color-brand-200: var(--c-color-orange-200);
-  --color-brand-300: var(--c-color-orange-300);
-  --color-brand-400: var(--c-color-orange-400);
-  --color-brand-500: var(--c-color-orange-500);
-  --color-brand-600: var(--c-color-orange-600);
-  --color-brand-700: var(--c-color-orange-700);
+  --color-brand-100: var(--c-color-brand-100);
+  --color-brand-200: var(--c-color-brand-200);
+  --color-brand-300: var(--c-color-brand-300);
+  --color-brand-400: var(--c-color-brand-400);
+  --color-brand-500: var(--c-color-brand-500);
+  --color-brand-600: var(--c-color-brand-600);
+  --color-brand-700: var(--c-color-brand-700);
 
   --color-series-1: var(--c-chart-series-1);
   --color-series-2: var(--c-chart-series-2);
@@ -115,8 +121,8 @@
   }
 
   ::selection {
-    background: var(--c-color-orange-200);
-    color: var(--c-color-orange-700);
+    background: var(--c-color-brand-200);
+    color: var(--c-color-brand-700);
   }
 
   :focus-visible {
@@ -138,6 +144,31 @@
 }
 
 @layer components {
+  /* A colour input renders as a bordered form field by default. This strips it
+     back to the swatch itself, so the accent control matches the two toggles
+     beside it instead of announcing that it is an <input>. */
+  .accent-swatch {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: none;
+    border-radius: var(--c-border-radius-500);
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .accent-swatch::-webkit-color-swatch-wrapper {
+    padding: 4px;
+  }
+
+  .accent-swatch::-webkit-color-swatch,
+  .accent-swatch::-moz-color-swatch {
+    border: none;
+    border-radius: var(--c-border-radius-500);
+  }
+
   /* Lightweight Charts paints its own attribution link; align it with the
      caption token so it stops reading as a stray accent link on the surface. */
   #tv-attr-logo,

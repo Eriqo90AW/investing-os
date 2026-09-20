@@ -1,0 +1,98 @@
+/* ===========================================================================
+   Investing OS — accent axis
+   ---------------------------------------------------------------------------
+   The third theme axis, and the only one that is computed rather than
+   authored. A viewer picks one colour; `src/lib/accent-derive.ts` solves the
+   whole accent from it in OKLCH — the 8-step brand ramp, both ink steps, the
+   fill and its label ink, chart slot 1 — and writes the result to
+   `<html>` as inline custom properties. `data-accent="custom"` marks that it
+   did.
+
+   Almost nothing needs a rule here, because almost everything an accent owns
+   is already theme-invariant or already resolves through another token:
+
+     the brand ramp        theme-invariant, so the inline value is enough, and
+                           `--c-color-accent` follows it per theme on its own
+                           (every palette points accent at brand-500/brand-400)
+     accent-fill/on-accent theme-invariant by design — a primary button is the
+                           same button on both grounds
+     hyperlink / official  set inline to `var(--c-color-accent)`, which is
+                           already theme-resolved
+
+   What is left is the handful of values that genuinely differ per theme and
+   so cannot be one inline value: chart slot 1, its label ink, and its area
+   gradient. The derivation supplies both variants; these rules pick one.
+
+   Specificity matches the palette blocks deliberately, and this file is
+   imported last, so source order decides. Keep it last.
+   =========================================================================== */
+
+:root[data-accent="custom"] {
+  --c-chart-series-1: var(--c-accent-mark-light);
+  --c-chart-on-series-1: var(--c-accent-on-mark-light);
+  --c-chart-area-top: rgb(var(--c-accent-mark-light-rgb) / 0.24);
+  --c-chart-area-bottom: rgb(var(--c-accent-mark-light-rgb) / 0);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-accent="custom"]:not([data-theme="light"]):not(.DAY) {
+    --c-chart-series-1: var(--c-accent-mark-dark);
+    --c-chart-on-series-1: var(--c-accent-on-mark-dark);
+    --c-chart-area-top: rgb(var(--c-accent-mark-dark-rgb) / 0.28);
+    --c-chart-area-bottom: rgb(var(--c-accent-mark-dark-rgb) / 0);
+  }
+}
+
+:root[data-accent="custom"][data-theme="dark"],
+:root[data-accent="custom"].NIGHT {
+  --c-chart-series-1: var(--c-accent-mark-dark);
+  --c-chart-on-series-1: var(--c-accent-on-mark-dark);
+  --c-chart-area-top: rgb(var(--c-accent-mark-dark-rgb) / 0.28);
+  --c-chart-area-bottom: rgb(var(--c-accent-mark-dark-rgb) / 0);
+}
+
+/* --- displacement ---------------------------------------------------------
+   Slot 1 always follows the accent, so an accent whose hue was already a
+   chart slot pushes that slot onto the hue the accent just vacated — the warm
+   one. The derivation decides *which* slot and stamps `data-accent-displaces`;
+   the backfill itself is fixed, so it lives here rather than being recomputed.
+   Blue accent -> slot 2 goes warm, teal -> slot 3, violet -> slot 4. The set
+   stays four CVD-separable hues in every combination.
+   ------------------------------------------------------------------------- */
+:root[data-accent-displaces="2"] {
+  --c-chart-series-2: #cc6d00;
+  --c-chart-on-series-2: var(--c-chart-label-ink);
+}
+:root[data-accent-displaces="3"] {
+  --c-chart-series-3: #cc6d00;
+  --c-chart-on-series-3: var(--c-chart-label-ink);
+}
+:root[data-accent-displaces="4"] {
+  --c-chart-series-4: #cc6d00;
+  --c-chart-on-series-4: var(--c-chart-label-ink);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-accent-displaces="2"]:not([data-theme="light"]):not(.DAY) {
+    --c-chart-series-2: #e07b0a;
+  }
+  :root[data-accent-displaces="3"]:not([data-theme="light"]):not(.DAY) {
+    --c-chart-series-3: #e07b0a;
+  }
+  :root[data-accent-displaces="4"]:not([data-theme="light"]):not(.DAY) {
+    --c-chart-series-4: #e07b0a;
+  }
+}
+
+:root[data-accent-displaces="2"][data-theme="dark"],
+:root[data-accent-displaces="2"].NIGHT {
+  --c-chart-series-2: #e07b0a;
+}
+:root[data-accent-displaces="3"][data-theme="dark"],
+:root[data-accent-displaces="3"].NIGHT {
+  --c-chart-series-3: #e07b0a;
+}
+:root[data-accent-displaces="4"][data-theme="dark"],
+:root[data-accent-displaces="4"].NIGHT {
+  --c-chart-series-4: #e07b0a;
+}

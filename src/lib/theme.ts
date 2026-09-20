@@ -6,7 +6,9 @@ export type ResolvedTheme = "light" | "dark";
 
 const STORAGE_KEY = "ios-theme";
 
-const [mode, setModeSignal] = createSignal<ThemeMode>("system");
+const DEFAULT_THEME: ThemeMode = "light";
+
+const [mode, setModeSignal] = createSignal<ThemeMode>(DEFAULT_THEME);
 const [resolved, setResolved] = createSignal<ResolvedTheme>("light");
 
 function prefersDark(): boolean {
@@ -48,17 +50,18 @@ export function setMode(m: ThemeMode): void {
 }
 
 /**
- * Call once from the page root. Restores the stored mode and keeps `resolved`
- * in step with the OS setting while the viewer is on "system".
+ * Call once from the page root. Restores the stored mode, falling back to the
+ * light theme, and keeps `resolved` in step with the OS setting while the
+ * viewer is on "system".
  */
 export function initTheme(): void {
   onMount(() => {
-    let stored: ThemeMode = "system";
+    let stored: ThemeMode = DEFAULT_THEME;
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw === "light" || raw === "dark" || raw === "system") stored = raw;
     } catch {
-      /* fall through to "system" */
+      /* fall through to the light default */
     }
     setModeSignal(stored);
     stamp(stored);
