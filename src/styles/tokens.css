@@ -1,0 +1,291 @@
+/* ===========================================================================
+   Investing OS — design tokens
+   ---------------------------------------------------------------------------
+   Lifted from CoinMarketCap's shipped `:root` block and kept under their
+   original `--c-*` names. This file is the single source of truth: Tailwind
+   reads these by reference in `app.css`, and the chart layer reads them at
+   runtime via getComputedStyle (see src/lib/chart-theme.ts).
+
+   Theme resolves in three states:
+     1. system light  -> bare :root
+     2. system dark   -> @media (prefers-color-scheme: dark), guarded
+     3. explicit      -> [data-theme] / .NIGHT / .DAY (CMC's own class name)
+   =========================================================================== */
+
+:root {
+  /* --- hue ramps (theme-invariant) ------------------------------------- */
+  --c-color-blue-100: #f0f6ff;
+  --c-color-blue-200: #dde4fd;
+  --c-color-blue-300: #acbdfb;
+  --c-color-blue-400: #6188ff;
+  --c-color-blue-500: #3861fb;
+  --c-color-blue-600: #2444d4;
+  --c-color-blue-700: #0728a1;
+  --c-color-blue-800: #1e274f;
+
+  --c-color-green-100: #defbf0;
+  --c-color-green-200: #c3f8e4;
+  --c-color-green-300: #8cf2cc;
+  --c-color-green-400: #67e4b5;
+  --c-color-green-500: #16c784;
+  --c-color-green-600: #119c68;
+  --c-color-green-700: #0d734c;
+  --c-color-green-800: #173c37;
+
+  --c-color-red-100: #fce6e8;
+  --c-color-red-200: #f8babd;
+  --c-color-red-300: #f8babd;
+  --c-color-red-400: #ee626a;
+  --c-color-red-500: #ea3943;
+  --c-color-red-600: #cb1620;
+  --c-color-red-700: #981018;
+  --c-color-red-800: #411f2a;
+
+  /* The accent ramp. Step 500 is deliberately a deep burnt orange rather than
+     a mid one: it is the only hue that ever sits under white text, and white
+     needs 4.5:1 on it (#c2410c gives 5.2:1). Step 400 is the light-on-dark
+     counterpart — it never takes white text, it *is* the text. */
+  --c-color-orange-100: #fff4ec;
+  --c-color-orange-200: #fed7aa;
+  --c-color-orange-300: #fdba74;
+  --c-color-orange-400: #f97316;
+  --c-color-orange-500: #c2410c;
+  --c-color-orange-600: #9a3412;
+  --c-color-orange-700: #7c2d12;
+  --c-color-orange-800: #3a2118;
+
+  --c-color-purple-100: #f6f0ff;
+  --c-color-purple-200: #e7d7fe;
+  --c-color-purple-300: #c8a5fe;
+  --c-color-purple-400: #a972fd;
+  --c-color-purple-500: #8a3ffc;
+  --c-color-purple-600: #6312de;
+  --c-color-purple-700: #4103a1;
+  --c-color-purple-800: #25015a;
+
+  --c-color-teal-100: #e8fafd;
+  --c-color-teal-200: #b9eff9;
+  --c-color-teal-300: #7ce1f3;
+  --c-color-teal-400: #3bd1ed;
+  --c-color-teal-500: #13b2cf;
+  --c-color-teal-600: #0f91a8;
+  --c-color-teal-700: #0c7487;
+  --c-color-teal-800: #084854;
+
+  --c-color-beige-100: #fdf4ea;
+  --c-color-beige-200: #fceddc;
+  --c-color-beige-300: #fbe0c6;
+  --c-color-beige-400: #f9d3af;
+  --c-color-beige-500: #f5b97f;
+  --c-color-beige-600: #ee8b2a;
+  --c-color-beige-700: #bd650f;
+  --c-color-beige-800: #433936;
+
+  --c-color-azure: #486df7;
+  --c-color-teal-brand: #23dcf5;
+
+  /* --- gray ramp: LIGHT (100 = nearest background, 600 = nearest ink) -----
+     Warm, not cool. Every step was rotated to OKLCH hue 55 at its original
+     lightness, so the whole ramp picked up the accent's warmth without a
+     single contrast ratio moving. Grounds keep 85% of the original chroma
+     (the tint should be visible); ink steps keep 45%, or body copy starts
+     reading brown. --------------------------------------------------------- */
+  --c-color-gray-100: #fcf9f7;
+  --c-color-gray-200: #f4f1ef;
+  --c-color-gray-300: #dbd4d0;
+  --c-color-gray-400: #b7aea8;
+  --c-color-gray-500: #918882;
+  --c-color-gray-600: #766b64;
+
+  /* --- semantic: LIGHT --------------------------------------------------- */
+  --c-color-background-1: #fefdfc;
+  --c-color-background-2: #ffffff;
+  --c-color-surface-1: #ffffff;
+  --c-color-surface-2: #fcf9f7;
+  --c-color-text-primary: #19130f;
+  --c-color-text-secondary: #766b64;
+  --c-color-text-caption: #b7aea8;
+  --c-color-text-hyperlink: #c2410c;
+  /* --- accent ------------------------------------------------------------
+     Two forms, because one value cannot do both jobs. `accent` is the accent
+     as *ink* — it must clear 4.5:1 on the page ground, so it re-steps per
+     theme. `accent-fill` is the accent as a *ground* under `on-accent` ink;
+     it stays put across themes so a primary button is the same button in
+     both. ---------------------------------------------------------------- */
+  --c-color-accent: var(--c-color-orange-500);
+  --c-color-accent-fill: #c2410c;
+  --c-color-accent-fill-hover: #9a3412;
+  --c-color-on-accent: #ffffff;
+  --c-color-positive: #16c784;
+  --c-color-negative: #ea3943;
+  --c-color-positive-bg: var(--c-color-green-100);
+  --c-color-negative-bg: var(--c-color-red-100);
+  --c-color-official: #c2410c;
+  --c-color-official-bg: var(--c-color-orange-100);
+  --c-color-reminder: #f5b97f;
+  --c-color-reminder-bg: var(--c-color-beige-100);
+  --c-color-no-access: #948a84;
+  --c-color-no-access-bg: var(--c-color-gray-200);
+  --c-color-overlay-bg: rgb(113 98 88 / 0.6);
+  --c-shadow-tiny: 0 1px 2px rgb(113 98 88 / 0.12), 0 4px 24px rgb(113 98 88 / 0.06);
+  --c-shadow-overlay: 0 8px 32px rgb(147 135 127 / 0.24), 0 1px 2px rgb(147 135 127 / 0.12);
+
+  /* --- chart tokens: LIGHT ----------------------------------------------
+     Categorical slots are validated with the dataviz skill's six checks
+     (lightness band, chroma floor, CVD separation, normal-vision floor,
+     contrast vs surface). Green/red are NOT in this set — they are reserved
+     for price direction and must never stand in for "series 5".
+     ---------------------------------------------------------------------- */
+  --c-chart-series-1: #c2410c; /* orange-500 */
+  --c-chart-series-2: #3861fb; /* blue-500   */
+  --c-chart-series-3: #0f91a8; /* teal-600   */
+  --c-chart-series-4: #8a3ffc; /* purple-500 */
+
+  --c-chart-grid: #f4f1ef;
+  --c-chart-axis-text: #766b64;
+  --c-chart-crosshair: #b7aea8;
+  --c-chart-up: #16c784;
+  --c-chart-down: #ea3943;
+  --c-chart-up-fill: rgb(22 199 132 / 0.16);
+  --c-chart-down-fill: rgb(234 57 67 / 0.16);
+  --c-chart-volume-up: rgb(22 199 132 / 0.5);
+  --c-chart-volume-down: rgb(234 57 67 / 0.5);
+  --c-chart-area-top: rgb(194 65 12 / 0.24);
+  --c-chart-area-bottom: rgb(194 65 12 / 0);
+
+  /* --- type scale (mobile; four steps grow at >=768px) ------------------- */
+  --c-font-size-50: 11px;
+  --c-font-size-75: 12px;
+  --c-font-size-100: 14px;
+  --c-font-size-200: 16px;
+  --c-font-size-300: 18px;
+  --c-font-size-400: 18px;
+  --c-font-size-600: 20px;
+  --c-font-size-800: 25px;
+  --c-font-size-1000: 32px;
+  --c-line-height-body: 150%;
+  --c-line-height-heading: 130%;
+
+  /* --- space (flat across breakpoints) ----------------------------------- */
+  --c-space-50: 4px;
+  --c-space-100: 8px;
+  --c-space-150: 12px;
+  --c-space-200: 16px;
+  --c-space-250: 20px;
+  --c-space-300: 24px;
+  --c-space-400: 32px;
+  --c-space-500: 40px;
+  --c-space-600: 48px;
+  --c-space-800: 64px;
+
+  /* --- radius (two steps grow at >=768px) & borders ---------------------- */
+  --c-border-radius-10: 2px;
+  --c-border-radius-50: 4px;
+  --c-border-radius-100: 8px;
+  --c-border-radius-200: 12px;
+  --c-border-radius-300: 16px;
+  --c-border-radius-400: 20px;
+  --c-border-radius-500: 50%;
+  --c-border-width-100: 1px;
+  --c-border-width-200: 2px;
+  --c-border-width-300: 4px;
+}
+
+/* --- density step-up at the tablet breakpoint (CMC's own behaviour) ------- */
+@media (min-width: 768px) {
+  :root {
+    --c-font-size-400: 20px;
+    --c-font-size-600: 25px;
+    --c-font-size-800: 32px;
+    --c-font-size-1000: 40px;
+    --c-border-radius-10: 4px;
+    --c-border-radius-50: 6px;
+    --c-border-radius-200: 14px;
+  }
+}
+
+/* --- DARK overrides -------------------------------------------------------
+   Declared twice on purpose: the media query covers the OS setting, the
+   attribute/class scope covers the in-page toggle, and each must win in its
+   own direction. Keep the two blocks identical.
+   ------------------------------------------------------------------------- */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]):not(.DAY) {
+    --c-color-gray-100: #2d231d;
+    --c-color-gray-200: #41332a;
+    --c-color-gray-300: #5f5853;
+    --c-color-gray-400: #736a63;
+    --c-color-gray-500: #948a84;
+    --c-color-gray-600: #afa6a0;
+
+    --c-color-background-1: #211812;
+    --c-color-background-2: #1d1109;
+    --c-color-surface-1: #2d231d;
+    --c-color-surface-2: #392c24;
+    --c-color-text-primary: #ffffff;
+    --c-color-text-secondary: #afa6a0;
+    --c-color-text-caption: #736a63;
+    --c-color-text-hyperlink: #f97316;
+    --c-color-accent: var(--c-color-orange-400);
+    --c-color-official: var(--c-color-orange-400);
+    --c-color-positive-bg: var(--c-color-green-800);
+    --c-color-negative-bg: var(--c-color-red-800);
+    --c-color-official-bg: var(--c-color-orange-800);
+    --c-color-reminder-bg: #433936;
+    --c-color-overlay-bg: rgb(33 24 18 / 0.6);
+    --c-shadow-tiny: 0 1px 2px rgb(29 17 9 / 0.24), 0 4px 24px rgb(29 17 9 / 0.12);
+    --c-shadow-overlay: 0 8px 32px #1d1109, 0 1px 2px #1d1109;
+
+    /* Not orange-400: the dataviz lightness band for a dark surface tops out
+       at OKLCH L 0.67 and orange-400 sits at 0.705. This step passes. */
+    --c-chart-series-1: #ea580c;
+    --c-chart-series-2: #6188ff; /* blue-400   */
+    --c-chart-series-3: #0f91a8;
+    --c-chart-series-4: #8a3ffc;
+
+    --c-chart-grid: #41332a;
+    --c-chart-axis-text: #afa6a0;
+    --c-chart-crosshair: #736a63;
+    --c-chart-area-top: rgb(234 88 12 / 0.28);
+    --c-chart-area-bottom: rgb(234 88 12 / 0);
+  }
+}
+
+:root[data-theme="dark"],
+:root.NIGHT {
+  --c-color-gray-100: #2d231d;
+  --c-color-gray-200: #41332a;
+  --c-color-gray-300: #5f5853;
+  --c-color-gray-400: #736a63;
+  --c-color-gray-500: #948a84;
+  --c-color-gray-600: #afa6a0;
+
+  --c-color-background-1: #211812;
+  --c-color-background-2: #1d1109;
+  --c-color-surface-1: #2d231d;
+  --c-color-surface-2: #392c24;
+  --c-color-text-primary: #ffffff;
+  --c-color-text-secondary: #afa6a0;
+  --c-color-text-caption: #736a63;
+  --c-color-text-hyperlink: #f97316;
+  --c-color-accent: var(--c-color-orange-400);
+  --c-color-official: var(--c-color-orange-400);
+  --c-color-positive-bg: var(--c-color-green-800);
+  --c-color-negative-bg: var(--c-color-red-800);
+  --c-color-official-bg: var(--c-color-orange-800);
+  --c-color-reminder-bg: #433936;
+  --c-color-overlay-bg: rgb(33 24 18 / 0.6);
+  --c-shadow-tiny: 0 1px 2px rgb(29 17 9 / 0.24), 0 4px 24px rgb(29 17 9 / 0.12);
+  --c-shadow-overlay: 0 8px 32px #1d1109, 0 1px 2px #1d1109;
+
+  --c-chart-series-1: #ea580c;
+  --c-chart-series-2: #6188ff;
+  --c-chart-series-3: #0f91a8;
+  --c-chart-series-4: #8a3ffc;
+
+  --c-chart-grid: #41332a;
+  --c-chart-axis-text: #afa6a0;
+  --c-chart-crosshair: #736a63;
+  --c-chart-area-top: rgb(234 88 12 / 0.28);
+  --c-chart-area-bottom: rgb(234 88 12 / 0);
+}

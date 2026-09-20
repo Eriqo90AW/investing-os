@@ -1,0 +1,31 @@
+{
+  "name": "investing-os",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "description": "Investing OS — design system and market UI kit, built on SolidStart + Tailwind v4 + TradingView Lightweight Charts.",
+  "packageManager": "pnpm@11.22.0",
+  "scripts": {
+    "preinstall": "npx only-allow pnpm",
+    "dev": "vite dev --port 5180",
+    "build": "vite build",
+    "build:static": "cross-env IOS_STATIC=1 vite build",
+    "preview": "vite preview --port 5180",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@solidjs/meta": "^0.29.4",
+    "@solidjs/router": "^1.0.0",
+    "@solidjs/start": "^2.0.5",
+    "lightweight-charts": "^5.2.1",
+    "solid-js": "^1.9.15"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/node": "^26.6.2",
+    "cross-env": "^10.1.0",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^5.9.3",
+    "vite": "^8.3.0"
+  }
+}

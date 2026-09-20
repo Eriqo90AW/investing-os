@@ -1,0 +1,148 @@
+@import "tailwindcss";
+@import "./styles/tokens.css";
+
+/* ===========================================================================
+   Tailwind theme — `inline` so every utility emits var() and follows the
+   theme at runtime. That is why this codebase has essentially no `dark:`
+   variants: `bg-surface-1` is already correct on both grounds.
+   =========================================================================== */
+@theme inline {
+  --color-bg-1: var(--c-color-background-1);
+  --color-bg-2: var(--c-color-background-2);
+  --color-surface-1: var(--c-color-surface-1);
+  --color-surface-2: var(--c-color-surface-2);
+  --color-ink: var(--c-color-text-primary);
+  --color-muted: var(--c-color-text-secondary);
+  --color-caption: var(--c-color-text-caption);
+  --color-link: var(--c-color-text-hyperlink);
+  --color-line: var(--c-color-gray-200);
+  --color-hairline: var(--c-color-gray-300);
+  --color-icon: var(--c-color-gray-500);
+
+  --color-pos: var(--c-color-positive);
+  --color-neg: var(--c-color-negative);
+  --color-pos-bg: var(--c-color-positive-bg);
+  --color-neg-bg: var(--c-color-negative-bg);
+  --color-official: var(--c-color-official);
+  --color-official-bg: var(--c-color-official-bg);
+  --color-reminder: var(--c-color-reminder);
+  --color-reminder-bg: var(--c-color-reminder-bg);
+  --color-noaccess: var(--c-color-no-access);
+  --color-noaccess-bg: var(--c-color-no-access-bg);
+
+  /* `accent` is the accent as ink and re-steps per theme; `accent-fill` /
+     `on-accent` are the fixed pair behind primary buttons. Reach for those
+     four before the raw brand ramp. */
+  --color-accent: var(--c-color-accent);
+  --color-accent-fill: var(--c-color-accent-fill);
+  --color-accent-fill-hover: var(--c-color-accent-fill-hover);
+  --color-on-accent: var(--c-color-on-accent);
+
+  --color-brand-100: var(--c-color-orange-100);
+  --color-brand-200: var(--c-color-orange-200);
+  --color-brand-300: var(--c-color-orange-300);
+  --color-brand-400: var(--c-color-orange-400);
+  --color-brand-500: var(--c-color-orange-500);
+  --color-brand-600: var(--c-color-orange-600);
+  --color-brand-700: var(--c-color-orange-700);
+
+  --color-series-1: var(--c-chart-series-1);
+  --color-series-2: var(--c-chart-series-2);
+  --color-series-3: var(--c-chart-series-3);
+  --color-series-4: var(--c-chart-series-4);
+
+  --text-50: var(--c-font-size-50);
+  --text-75: var(--c-font-size-75);
+  --text-100: var(--c-font-size-100);
+  --text-200: var(--c-font-size-200);
+  --text-300: var(--c-font-size-300);
+  --text-400: var(--c-font-size-400);
+  --text-600: var(--c-font-size-600);
+  --text-800: var(--c-font-size-800);
+  --text-1000: var(--c-font-size-1000);
+
+  --font-weight-300: 300;
+  --font-weight-400: 400;
+  --font-weight-500: 500;
+  --font-weight-600: 600;
+  --font-weight-700: 700;
+  --font-weight-900: 900;
+
+  --spacing-50: var(--c-space-50);
+  --spacing-100: var(--c-space-100);
+  --spacing-150: var(--c-space-150);
+  --spacing-200: var(--c-space-200);
+  --spacing-250: var(--c-space-250);
+  --spacing-300: var(--c-space-300);
+  --spacing-400: var(--c-space-400);
+  --spacing-500: var(--c-space-500);
+  --spacing-600: var(--c-space-600);
+  --spacing-800: var(--c-space-800);
+
+  --radius-10: var(--c-border-radius-10);
+  --radius-50: var(--c-border-radius-50);
+  --radius-100: var(--c-border-radius-100);
+  --radius-200: var(--c-border-radius-200);
+  --radius-300: var(--c-border-radius-300);
+  --radius-400: var(--c-border-radius-400);
+
+  --shadow-tiny: var(--c-shadow-tiny);
+  --shadow-overlay: var(--c-shadow-overlay);
+
+  --font-sans: Inter, -apple-system, BlinkMacSystemFont, "segoe ui", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+@layer base {
+  html {
+    color-scheme: light dark;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    margin: 0;
+    background: var(--c-color-background-1);
+    color: var(--c-color-text-primary);
+    font-family: var(--font-sans);
+    font-size: var(--c-font-size-100);
+    line-height: var(--c-line-height-body);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  code,
+  pre {
+    font-family: var(--font-mono);
+  }
+
+  ::selection {
+    background: var(--c-color-orange-200);
+    color: var(--c-color-orange-700);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--c-color-accent);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  /* Lightweight Charts paints its own attribution link; align it with the
+     caption token so it stops reading as a stray accent link on the surface. */
+  #tv-attr-logo,
+  .tv-lightweight-charts a[href*="tradingview"] {
+    color: var(--c-color-text-caption) !important;
+    opacity: 0.55;
+  }
+}
