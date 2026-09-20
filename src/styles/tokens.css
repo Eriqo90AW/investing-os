@@ -153,6 +153,54 @@
   --c-chart-area-top: rgb(194 65 12 / 0.24);
   --c-chart-area-bottom: rgb(194 65 12 / 0);
 
+  /* --- magnitude & polarity ramps: LIGHT -------------------------------
+     Categorical answers "which one"; these two answer "how much" and "which
+     way". Sequential is one hue, light -> dark, five steps with >= 0.06 OKLCH
+     L between neighbours and a pale end that still clears 2:1 on the surface
+     (treemap, heatmap of levels). Diverging is the reserved direction pair
+     around a NEUTRAL midpoint — never a hue in the middle.
+     -------------------------------------------------------------------- */
+  --c-chart-seq-1: #fa9d6c;
+  --c-chart-seq-2: #e57431;
+  --c-chart-seq-3: #bd5a1a;
+  --c-chart-seq-4: #924411;
+
+  --c-chart-div-neg-2: #cb1620; /* red-600   */
+  --c-chart-div-neg-1: #f8babd; /* red-200   */
+  --c-chart-div-mid: #f4f1ef; /* gray-200  */
+  --c-chart-div-pos-1: #8cf2cc; /* green-300 */
+  --c-chart-div-pos-2: #119c68; /* green-600 */
+
+  /* The tail of a part-to-whole chart. Deliberately chromaless: "Other" is
+     not a fifth identity, it is the absence of one. */
+  --c-chart-other: #b7aea8;
+
+  /* --- ink for a label set INSIDE a fill ---------------------------------
+     The one place text colour may depend on a mark. Which of the two it is
+     is a fact about the palette, not about the component, so it is a token:
+     every fill that can carry an inline label ships with its own `on-`
+     partner, and both sides flip together when the theme does. Every pair
+     below clears 4.5:1. ---------------------------------------------------- */
+  --c-chart-label-ink: #19130f;
+  --c-chart-label-on-dark: #ffffff;
+
+  --c-chart-on-series-1: var(--c-chart-label-on-dark);
+  --c-chart-on-series-2: var(--c-chart-label-on-dark);
+  --c-chart-on-series-3: var(--c-chart-label-ink);
+  --c-chart-on-series-4: var(--c-chart-label-on-dark);
+  --c-chart-on-other: var(--c-chart-label-ink);
+
+  --c-chart-on-seq-1: var(--c-chart-label-ink);
+  --c-chart-on-seq-2: var(--c-chart-label-ink);
+  --c-chart-on-seq-3: var(--c-chart-label-on-dark);
+  --c-chart-on-seq-4: var(--c-chart-label-on-dark);
+
+  --c-chart-on-div-neg-2: var(--c-chart-label-on-dark);
+  --c-chart-on-div-neg-1: var(--c-chart-label-ink);
+  --c-chart-on-div-mid: var(--c-chart-label-ink);
+  --c-chart-on-div-pos-1: var(--c-chart-label-ink);
+  --c-chart-on-div-pos-2: var(--c-chart-label-ink);
+
   /* --- type scale (mobile; four steps grow at >=768px) ------------------- */
   --c-font-size-50: 11px;
   --c-font-size-75: 12px;
@@ -248,6 +296,36 @@
     --c-chart-crosshair: #736a63;
     --c-chart-area-top: rgb(234 88 12 / 0.28);
     --c-chart-area-bottom: rgb(234 88 12 / 0);
+
+    --c-chart-seq-1: #8e4210;
+    --c-chart-seq-2: #b25418;
+    --c-chart-seq-3: #d76821;
+    --c-chart-seq-4: #f58341;
+
+    --c-chart-div-neg-2: #ea3943;
+    --c-chart-div-neg-1: #8f2228;
+    --c-chart-div-mid: #41332a;
+    --c-chart-div-pos-1: #0f7a52;
+    --c-chart-div-pos-2: #16c784;
+
+    --c-chart-other: #736a63;
+
+    --c-chart-on-series-1: var(--c-chart-label-ink);
+    --c-chart-on-series-2: var(--c-chart-label-ink);
+    --c-chart-on-series-3: var(--c-chart-label-ink);
+    --c-chart-on-series-4: var(--c-chart-label-on-dark);
+    --c-chart-on-other: var(--c-chart-label-on-dark);
+
+    --c-chart-on-seq-1: var(--c-chart-label-on-dark);
+    --c-chart-on-seq-2: var(--c-chart-label-on-dark);
+    --c-chart-on-seq-3: var(--c-chart-label-ink);
+    --c-chart-on-seq-4: var(--c-chart-label-ink);
+
+    --c-chart-on-div-neg-2: var(--c-chart-label-ink);
+    --c-chart-on-div-neg-1: var(--c-chart-label-on-dark);
+    --c-chart-on-div-mid: var(--c-chart-label-on-dark);
+    --c-chart-on-div-pos-1: var(--c-chart-label-on-dark);
+    --c-chart-on-div-pos-2: var(--c-chart-label-ink);
   }
 }
 
@@ -288,4 +366,34 @@
   --c-chart-crosshair: #736a63;
   --c-chart-area-top: rgb(234 88 12 / 0.28);
   --c-chart-area-bottom: rgb(234 88 12 / 0);
+
+  --c-chart-seq-1: #8e4210;
+  --c-chart-seq-2: #b25418;
+  --c-chart-seq-3: #d76821;
+  --c-chart-seq-4: #f58341;
+
+  --c-chart-div-neg-2: #ea3943;
+  --c-chart-div-neg-1: #8f2228;
+  --c-chart-div-mid: #41332a;
+  --c-chart-div-pos-1: #0f7a52;
+  --c-chart-div-pos-2: #16c784;
+
+  --c-chart-other: #736a63;
+
+  --c-chart-on-series-1: var(--c-chart-label-ink);
+  --c-chart-on-series-2: var(--c-chart-label-ink);
+  --c-chart-on-series-3: var(--c-chart-label-ink);
+  --c-chart-on-series-4: var(--c-chart-label-on-dark);
+  --c-chart-on-other: var(--c-chart-label-on-dark);
+
+  --c-chart-on-seq-1: var(--c-chart-label-on-dark);
+  --c-chart-on-seq-2: var(--c-chart-label-on-dark);
+  --c-chart-on-seq-3: var(--c-chart-label-ink);
+  --c-chart-on-seq-4: var(--c-chart-label-ink);
+
+  --c-chart-on-div-neg-2: var(--c-chart-label-ink);
+  --c-chart-on-div-neg-1: var(--c-chart-label-on-dark);
+  --c-chart-on-div-mid: var(--c-chart-label-on-dark);
+  --c-chart-on-div-pos-1: var(--c-chart-label-on-dark);
+  --c-chart-on-div-pos-2: var(--c-chart-label-ink);
 }

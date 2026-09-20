@@ -3,7 +3,7 @@
  *
  *   pnpm build:static     # SSR build with a relative asset base
  *   pnpm preview          # serve it
- *   node scripts/export-artifact.mjs http://localhost:5182
+ *   node scripts/export-artifact.mjs http://localhost:5182 [/design]
  *
  * Output lands in dist/artifact/: an index.html plus the app's own asset chunks,
  * re-rooted from `_build/` to `build/` because some static hosts reserve names
@@ -19,6 +19,8 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 
 const origin = process.argv[2] ?? "http://localhost:5182";
+/** The spec page is the app's only real route; `/` merely redirects to it. */
+const page = process.argv[3] ?? "/design";
 const root = path.resolve(import.meta.dirname, "..");
 const clientDir = path.join(root, "dist", "client");
 const outDir = path.join(root, "dist", "artifact");
@@ -28,9 +30,9 @@ if (!existsSync(path.join(clientDir, "_build"))) {
   process.exit(1);
 }
 
-const res = await fetch(origin + "/");
+const res = await fetch(origin + page);
 if (!res.ok) {
-  console.error(`GET ${origin}/ returned ${res.status}. Is the preview server running?`);
+  console.error(`GET ${origin}${page} returned ${res.status}. Is the preview server running?`);
   process.exit(1);
 }
 const html = await res.text();

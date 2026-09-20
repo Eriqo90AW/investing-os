@@ -70,24 +70,31 @@ gray hex — always use the token.
 
 | Token | Light | Dark | Role |
 |-------|-------|------|------|
-| `gray-100` | `#F8FAFD` | `#222531` | Subtle surface / zebra row |
-| `gray-200` | `#EFF2F5` | `#323546` | Hairline borders, dividers |
-| `gray-300` | `#CFD6E4` | `#53596A` | Disabled borders, skeletons |
-| `gray-400` | `#A6B0C3` | `#646B80` | Caption text, placeholder |
-| `gray-500` | `#808A9D` | `#858CA2` | Icon default (near-identical in both themes) |
-| `gray-600` | `#616E85` | `#A1A7BB` | Secondary text |
+| `gray-100` | `#FCF9F7` | `#2D231D` | Subtle surface / zebra row |
+| `gray-200` | `#F4F1EF` | `#41332A` | Hairline borders, dividers |
+| `gray-300` | `#DBD4D0` | `#5F5853` | Disabled borders, skeletons |
+| `gray-400` | `#B7AEA8` | `#736A63` | Caption text, placeholder |
+| `gray-500` | `#918882` | `#948A84` | Icon default (near-identical in both themes) |
+| `gray-600` | `#766B64` | `#AFA6A0` | Secondary text |
+
+**The ramp is warm.** CMC's neutrals are blue-cast; this system's are not. Every step was
+rotated to **OKLCH hue 55 at its original lightness**, so the whole ramp picked up the
+accent's warmth and *not one contrast ratio moved* — the rotation is hue-only. Grounds
+(`100`, `200`, the backgrounds and surfaces) keep 85% of the original chroma so the tint
+is actually visible; ink steps (`300`–`600`) keep 45%, past which body copy starts
+reading brown rather than black.
 
 ### 2.3 Semantic tokens
 
 | Token | Light | Dark |
 |-------|-------|------|
-| `background-1` | `#FCFDFE` | `#171924` |
-| `background-2` | `#FFFFFF` | `#0D1421` |
-| `surface-1` | `#FFFFFF` | `#222531` |
-| `surface-2` | `#F8FAFD` | `#2B2E3D` |
-| `text-primary` | `#0D1421` | `#FFFFFF` |
-| `text-secondary` | `#616E85` | `#A1A7BB` |
-| `text-caption` | `#A6B0C3` | `#646B80` |
+| `background-1` | `#FEFDFC` | `#211812` |
+| `background-2` | `#FFFFFF` | `#1D1109` |
+| `surface-1` | `#FFFFFF` | `#2D231D` |
+| `surface-2` | `#FCF9F7` | `#392C24` |
+| `text-primary` | `#19130F` | `#FFFFFF` |
+| `text-secondary` | `#766B64` | `#AFA6A0` |
+| `text-caption` | `#B7AEA8` | `#736A63` |
 | `text-hyperlink` | `#C2410C` | `#F97316` |
 | `accent` (ink) | `orange-500` | `orange-400` |
 | `accent-fill` / `on-accent` | `#C2410C` / `#FFF` | `#C2410C` / `#FFF` |
@@ -97,8 +104,13 @@ gray hex — always use the token.
 | `negative-bg` | `red-100` | `red-800` |
 | `official` / `official-bg` | `#C2410C` / `orange-100` | `#F97316` / `orange-800` |
 | `reminder` / `reminder-bg` | `#F5B97F` / `beige-100` | `#F5B97F` / `#433936` |
-| `no-access` / `no-access-bg` | `#858CA2` / `gray-200` | `#858CA2` / `gray-200` |
+| `no-access` / `no-access-bg` | `#948A84` / `gray-200` | `#948A84` / `gray-200` |
 | `overlay-bg` | `rgba(88,102,126,.6)` | `rgba(23,25,36,.6)` |
+
+**Dark slot 1 is `#EA580C`, not the `accent` ink step.** The dataviz lightness band for a
+dark surface tops out at OKLCH L 0.67 and `orange-400` sits at 0.705, so it fails as a
+*mark* even though it is correct as *text*. The two jobs have different bands; the tokens
+are allowed to differ.
 
 **Note:** `positive` and `negative` are theme-invariant. CMC uses them only on large or
 bold numerals, never as body copy — hold to that and the contrast works on both grounds.
@@ -318,13 +330,17 @@ The result is that no chart color is ever written twice — the palette lives in
 
 | Token | Light | Dark | Role |
 |-------|-------|------|------|
-| `--c-chart-grid` | `#EFF2F5` | `#323546` | Horizontal gridlines (= `gray-200`) |
-| `--c-chart-axis-text` | `#616E85` | `#A1A7BB` | Axis labels (= `text-secondary`) |
-| `--c-chart-crosshair` | `#A6B0C3` | `#646B80` | Crosshair rules (= `gray-400`) |
+| `--c-chart-grid` | `#F4F1EF` | `#41332A` | Horizontal gridlines (= `gray-200`) |
+| `--c-chart-axis-text` | `#766B64` | `#AFA6A0` | Axis labels (= `text-secondary`) |
+| `--c-chart-crosshair` | `#B7AEA8` | `#736A63` | Crosshair rules (= `gray-400`) |
 | `--c-chart-up` / `-down` | `#16C784` / `#EA3943` | same | Candle body, baseline poles |
 | `--c-chart-volume-up` / `-down` | `rgb(… / .5)` | same | Volume bars, held back from the price pane |
 | `--c-chart-area-top` / `-bottom` | orange 24% → 0% | orange 28% → 0% | Area fill under a single series |
-| `--c-chart-series-1…4` | see §7.4 | see §7.4 | Categorical slots |
+| `--c-chart-series-1…4` | see §7.4 | see §7.4 | Categorical slots — *which one* |
+| `--c-chart-seq-1…4` | `#FA9D6C` → `#924411` | `#8E4210` → `#F58341` | Sequential — *how much* |
+| `--c-chart-div-neg-2…pos-2` | see §7.5 | see §7.5 | Diverging — *which way* |
+| `--c-chart-other` | `#B7AEA8` | `#736A63` | The de-emphasised tail |
+| `--c-chart-on-*` | — | — | Ink for a label set **inside** each fill |
 
 ### 7.4 Categorical slots
 
@@ -334,7 +350,7 @@ hue.
 
 | Slot | Hue | Light | Dark |
 |------|-----|-------|------|
-| 1 | orange | `#C2410C` | `#F97316` |
+| 1 | orange | `#C2410C` | `#EA580C` |
 | 2 | blue | `#3861FB` | `#6188FF` |
 | 3 | teal | `#0F91A8` | `#0F91A8` |
 | 4 | purple | `#8A3FFC` | `#8A3FFC` |
@@ -346,14 +362,99 @@ blue, not amber: with orange in slot 1, an amber slot 2 collapses into it under 
 CVD model.
 
 **Validation.** Both columns were run through the six checks against their own surface
-(`#FFFFFF` light, `#222531` dark): lightness band, chroma floor, CVD separation,
+(`#FFFFFF` light, `#2D231D` dark): lightness band, chroma floor, CVD separation,
 normal-vision floor, contrast vs surface. All pass in both modes. The worst adjacent pair
 under deuteranopia is purple ↔ teal at **ΔE 16.2**, well clear of the ΔE 8 target, so no
 secondary encoding is strictly required — the charts direct-label anyway.
 
 Re-run after any change to the slots rather than eyeballing them.
 
-### 7.5 Picking the form
+### 7.5 Sequential and diverging
+
+Categorical answers *which one*. These answer *how much* and *which way*, and reaching
+for the wrong one is the fastest way to misstate the data.
+
+**Sequential** — one hue, light → dark, four steps. Each step is at least 0.06 OKLCH
+lightness from its neighbour and the pale end still clears 2:1 on the surface. Used where
+position and size already carry identity and hue is free to carry magnitude: treemap
+tiles, heat grids of levels.
+
+| Step | Light | Dark |
+|------|-------|------|
+| 1 | `#FA9D6C` | `#8E4210` |
+| 2 | `#E57431` | `#B25418` |
+| 3 | `#BD5A1A` | `#D76821` |
+| 4 | `#924411` | `#F58341` |
+
+It runs light → dark in light mode and dark → light in dark mode. That is not a flip of
+the same list — each is stepped against its own surface so step 1 stays the faint end on
+whichever ground it lands.
+
+**Diverging** — the reserved direction pair around a neutral midpoint. Never a hue in the
+middle: a third colour at zero invents a third category.
+
+| Step | Light | Dark |
+|------|-------|------|
+| `div-neg-2` | `#CB1620` | `#EA3943` |
+| `div-neg-1` | `#F8BABD` | `#8F2228` |
+| `div-mid` | `#F4F1EF` | `#41332A` |
+| `div-pos-1` | `#8CF2CC` | `#0F7A52` |
+| `div-pos-2` | `#119C68` | `#16C784` |
+
+**`--c-chart-other`** (`#B7AEA8` / `#736A63`) is the tail of a part-to-whole chart, and is
+deliberately chromaless. A fifth series is not a fifth identity; it is the absence of one.
+It fails the categorical chroma check on purpose — do not "fix" it.
+
+### 7.6 Composition and distribution
+
+Nine forms that are not time series, so Lightweight Charts has nothing to offer them.
+They are hand-drawn SVG in `src/components/charts/svg/`, which also means they render on
+the **server** — that whole section of the page has no loading state, unlike the canvas
+charts above it. They read `--c-chart-*` through plain CSS, so they follow the theme with
+no sampling and no re-theme pass.
+
+| The reader must… | Form | Colour's job |
+|---|---|---|
+| Rank things against each other | Ranked bar, one baseline | Direction pair |
+| See share of a whole, at a glance | Donut (pie if there's no total) | Categorical, ≤ 4 + Other |
+| See share as territory | **Treemap** | Sequential |
+| Watch a mix drift over time | 100% stacked bar | Categorical, ≤ 4 + Other |
+| Follow how a total was built | Waterfall bridge | Direction pair, neutral totals |
+| Weigh two variables together | Scatter | Emphasis: ≤ 3 named + field |
+| Read magnitude across a grid | Heatmap | Diverging around zero |
+| See the shape of a distribution | Histogram | One hue |
+| Read one current number | Stat tile / hero figure | None — it isn't a chart |
+
+**The treemap is the market-share form.** Squarified layout (Bruls, Huizing & van Wijk):
+tile area is *exactly* proportional to share, and the algorithm only chooses how to cut
+the remaining rectangle so tiles come out near-square instead of as slivers. The
+degenerate cases fall out of the algorithm rather than being special-cased — one name at
+100% fills the square edge to edge, 90/10 splits it 90/10, four equal names give a clean
+2×2. Verified against the shipped function, not asserted.
+
+**The pie and donut carry their own caveat, on the card.** They answer exactly one
+question — "is anything dominant" — and the spec says so in the note where a reader will
+see it. Anything finer (is Financials ahead of Healthcare?) is the ranked bar. Five
+segments is the ceiling, and the fifth is `Other`, so it is four identities and a tail.
+Prefer the donut whenever a total exists: the hole is where the total goes, which is the
+one thing a pie cannot show.
+
+**Shared rules across all nine.**
+
+- **White does the separating.** A 2px surface gap between touching marks — stacked
+  segments, adjacent bars, heat cells, treemap tiles — and a 2px surface ring on
+  overlapping dots. Never a stroke around a mark; a stroke is ink that isn't data.
+- **A label that won't fit is not drawn.** Never clipped, never shrunk away. The treemap
+  measures each tile against three thresholds (ticker / share / full name) and drops what
+  won't fit; the tooltip and the table view keep it reachable.
+- **Direct labels don't stack.** Where two named scatter points sit close, the label
+  flips to the other side of its dot rather than being nudged vertically off it.
+- **Bars are ≤ 24px with a 4px rounded data-end and a square baseline end.** Rounding
+  both ends detaches the mark from its baseline and makes short bars read as pills.
+- **Every one has a table view and a hover readout.** The tooltip enhances and never
+  gates: its numbers are all in the table too.
+
+### 7.7 Picking the form
 
 | The data's job | Form | On this page |
 |---|---|---|
@@ -367,7 +468,7 @@ Re-run after any change to the slots rather than eyeballing them.
 Sparklines stay SVG on purpose: at 135×40 a chart instance per row costs more and reads
 no better, and the SVG picks up `--c-chart-up` / `-down` directly.
 
-### 7.6 Chrome
+### 7.8 Chrome
 
 The chart chrome is as recessive as the table's:
 
@@ -379,7 +480,7 @@ The chart chrome is as recessive as the table's:
 - Line weight 2px, matching `--c-border-width-200`.
 - Chart cards are flat: `surface-1`, `radius-200`, 1px `gray-200`, **no shadow**.
 
-### 7.7 Anatomy
+### 7.9 Anatomy
 
 Every figure goes through `ChartFrame`, so the parts land in the same place each time:
 
@@ -391,7 +492,7 @@ Every figure goes through `ChartFrame`, so the parts land in the same place each
 4. **The plot.**
 5. **Table view**, in a `<details>` — the same numbers, downsampled, as text.
 
-### 7.8 Non-negotiables
+### 7.10 Non-negotiables
 
 - **One axis.** Two measures at different scales get two panes or a common index. Never
   a second y-scale on one plot.
@@ -438,11 +539,18 @@ rare component that needs a genuinely different treatment, not a different value
 
 ## 9. Accessibility notes
 
-- `text-caption` on `background-1` is roughly 2.9:1 in light mode. CMC uses it only for
-  non-essential meta; don't put anything load-bearing in it.
+- `text-caption` measures **2.2:1** on a light ground and **2.9:1** on a dark one. Both
+  are below AA, by design — it is meta-only ink. Never put anything load-bearing in it.
+  (The old note claiming 2.9:1 in light mode was simply wrong; the ratio has not changed,
+  the figure had.)
 - Never encode price direction with color alone — the `▲` / `▼` glyph is required.
-- Focus ring: `0 0 0 3px rgba(56,97,251,.35)` in both themes. Never remove an outline
+- Focus ring: 2px solid `accent` at 2px offset, in both themes. Never remove an outline
   without replacing it.
+- Every chart ships a `<details>` table view and an `aria-label` naming the series, so
+  nothing is reachable only by hovering.
+- A label set inside a filled mark takes its paired `--c-chart-on-*` token. Every fill /
+  ink pair in the system clears 4.5:1 — that is what fixed the number of sequential steps
+  at four rather than five.
 - Table rows need a `:focus-visible` state, not just `:hover`.
 
 ---
@@ -464,8 +572,12 @@ can't appear beside `pnpm-lock.yaml`. Commit both `pnpm-lock.yaml` and
 `pnpm-workspace.yaml`.
 
 The live spec page — every token, component and chart, with a working theme toggle — is
-the app's index route. Open it and flip Light / Auto / Dark; the hex labels under each
-swatch are sampled from `:root` at runtime, so they show what actually paints.
+at **`/design`** (`http://localhost:5180/design`). Open it and flip Light / Auto / Dark;
+the hex labels under each swatch are sampled from `:root` at runtime, so they show what
+actually paints. `/` redirects there, since nothing else is served from this app yet.
+
+**This page is the design system.** There is no second artifact to keep in sync — if a
+token, component or chart is not on it, it is not in the system.
 
 ### 10.2 Where things live
 
@@ -478,8 +590,11 @@ swatch are sampled from `:root` at runtime, so they show what actually paints.
 | `src/lib/theme.ts` | Three-state theme signal and the `.NIGHT` / `.DAY` stamp. |
 | `src/lib/market-data.ts` | Deterministic sample series, seeded so SSR and hydration agree. |
 | `src/components/ChartFrame.tsx` | Shared chart anatomy (§7.7). |
-| `src/components/charts/` | The four Lightweight Charts figures. |
-| `src/routes/index.tsx` | The spec page itself. |
+| `src/components/charts/` | The four Lightweight Charts (canvas) figures. |
+| `src/routes/design.tsx` | **The spec page itself** — this document's live counterpart. |
+| `src/routes/index.tsx` | A three-line redirect from `/` to `/design`. |
+| `src/components/charts/svg/` | The nine SSR'd composition & distribution figures (§7.6). |
+| `src/lib/chart-data.ts` | Hand-set fixtures for those nine — shape matters, so nothing is generated. |
 | `scripts/export-artifact.mjs` | Snapshots the rendered page into a flat static bundle. |
 
 ### 10.3 Static export
@@ -487,12 +602,14 @@ swatch are sampled from `:root` at runtime, so they show what actually paints.
 ```bash
 pnpm build:static                      # SSR build with a relative asset base
 pnpm preview                           # serve dist/
-node scripts/export-artifact.mjs http://localhost:5180
+node scripts/export-artifact.mjs http://localhost:5180 /design
 ```
 
 Produces `dist/artifact/` — an `index.html` plus `build/assets/`, hostable as flat files.
 
-### 10.4 Superseded
+### 10.4 A note on this document
 
-`design/design-system.html` is the original single-file prototype of this page, kept for
-reference only. **The SolidStart app is canonical** — edit `src/`, not that file.
+`design/design-system.html` used to hold a standalone single-file copy of the spec page.
+It has been deleted: two artifacts describing one system is one artifact too many, and it
+had already drifted. The running app at `/design` is the design system; this markdown file
+is the written companion to it, not a duplicate of it.

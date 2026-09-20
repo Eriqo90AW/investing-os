@@ -1,8 +1,11 @@
 import { For, Show, createEffect, createSignal } from "solid-js";
 import { resolved } from "~/lib/theme";
 import {
+  DIV_STEPS,
   GRAY_ROLES,
+  GRAY_NOTE,
   GRAY_STEPS,
+  SEQ_STEPS,
   HUES,
   HUE_NOTES,
   RADIUS_SCALE,
@@ -164,7 +167,7 @@ export function ColorFoundations() {
           Gray is positional, not absolute: <b class="text-ink">100</b> is always the step
           nearest the background and <b class="text-ink">600</b> the step nearest the text.
           Switching themes flips the actual hex values — watch the labels change. Never
-          hardcode one.
+          hardcode one. {GRAY_NOTE}
         </Lede>
         <div class="mt-200 grid gap-150 grid-cols-3 sm:grid-cols-6">
           <For each={GRAY_STEPS}>
@@ -212,6 +215,88 @@ export function ColorFoundations() {
           normal-vision floor and contrast all pass. Worst adjacent pair under deuteranopia
           is purple ↔ teal at ΔE 16.2, comfortably above the ΔE 8 target.
         </p>
+      </div>
+
+      <div class="mt-500">
+        <SubHeading>Magnitude and polarity</SubHeading>
+        <Lede>
+          Categorical answers <i>which one</i>. These two answer <i>how much</i> and{" "}
+          <i>which way</i>, and reaching for the wrong one is the most common way a
+          chart misstates its data.
+        </Lede>
+
+        <div class="mt-200 grid gap-250 lg:grid-cols-2">
+          <div class="rounded-200 border border-line bg-surface-1 p-250">
+            <div class="text-100 font-600">Sequential · one hue, light → dark</div>
+            <p class="mt-50 text-75 text-muted">
+              Four steps, each at least 0.06 OKLCH lightness from its neighbour, with a
+              pale end that still clears 2:1 on the surface. Treemap tiles, heat grids of
+              levels.
+            </p>
+            <div class="mt-150 flex gap-50">
+              <For each={SEQ_STEPS}>
+                {step => (
+                  <div class="flex-1">
+                    <div
+                      class="h-12 rounded-50 grid place-items-center text-50 font-600"
+                      style={{
+                        background: `var(--c-chart-seq-${step})`,
+                        color: `var(--c-chart-on-seq-${step})`,
+                      }}
+                    >
+                      {step}
+                    </div>
+                    <LiveHex cssVar={`--c-chart-seq-${step}`} />
+                  </div>
+                )}
+              </For>
+            </div>
+          </div>
+
+          <div class="rounded-200 border border-line bg-surface-1 p-250">
+            <div class="text-100 font-600">Diverging · two hues, neutral pivot</div>
+            <p class="mt-50 text-75 text-muted">
+              The reserved direction pair around a grey middle. The midpoint is never a
+              hue — a third colour there invents a third category out of zero.
+            </p>
+            <div class="mt-150 flex gap-50">
+              <For each={DIV_STEPS}>
+                {step => (
+                  <div class="flex-1 min-w-0">
+                    <div
+                      class="h-12 rounded-50"
+                      style={{ background: `var(${step.cssVar})` }}
+                    />
+                    <div class="mt-50 text-50 text-muted truncate">{step.label}</div>
+                    <LiveHex cssVar={step.cssVar} />
+                  </div>
+                )}
+              </For>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-150 rounded-200 border border-line bg-surface-1 p-250 flex flex-wrap items-center gap-250">
+          <div>
+            <div class="text-100 font-600">other</div>
+            <p class="text-75 text-muted max-w-[46ch]">
+              The tail of a part-to-whole chart. Deliberately chromaless: a fifth series
+              is not a fifth identity, it is the absence of one.
+            </p>
+          </div>
+          <div class="ml-auto flex items-center gap-100">
+            <span
+              class="grid place-items-center w-24 h-12 rounded-50 text-75 font-600"
+              style={{
+                background: "var(--c-chart-other)",
+                color: "var(--c-chart-on-other)",
+              }}
+            >
+              Other
+            </span>
+            <LiveHex cssVar="--c-chart-other" />
+          </div>
+        </div>
       </div>
     </>
   );
