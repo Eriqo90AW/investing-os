@@ -21,7 +21,7 @@ function ChartSkeleton() {
   return (
     <div class="rounded-200 border border-line bg-surface-1 p-250">
       <div class="h-5 w-40 rounded-50 bg-surface-2" />
-      <div class="mt-150 h-[220px] w-full rounded-100 bg-surface-2" />
+      <div class="mt-150 h-[460px] w-full rounded-100 bg-surface-2" />
     </div>
   );
 }
@@ -205,7 +205,7 @@ export function SetupFormModal(props: SetupFormModalProps) {
         props.initial?.id ? `Edit ${props.initial.symbol} setup` : props.initial ? "Draft setup" : "New setup"
       }
       onClose={props.onClose}
-      width="820px"
+      width="1360px"
       footer={
         <div class="flex items-center justify-between gap-200">
           <p class="text-50 text-caption">
@@ -231,6 +231,9 @@ export function SetupFormModal(props: SetupFormModalProps) {
         </div>
       }
     >
+      {/* Wide workspace: inputs + agent on the left, chart focus on the right. */}
+      <div class="lg:grid lg:grid-cols-[440px_minmax(0,1fr)]">
+        <div class="min-w-0 border-b border-line lg:border-b-0 lg:border-r">
       {/* Mock agentic composer */}
       <section class="border-b border-line bg-surface-2 px-250 py-200">
         <div class="flex items-center justify-between gap-150">
@@ -273,7 +276,7 @@ export function SetupFormModal(props: SetupFormModalProps) {
       >
         <section aria-label="Instrument">
           <h4 class="text-50 font-700 uppercase tracking-[.08em] text-caption">Instrument</h4>
-          <div class="mt-150 grid grid-cols-1 gap-200 sm:grid-cols-2">
+          <div class="mt-150 grid grid-cols-1 gap-200 sm:grid-cols-2 lg:grid-cols-1">
             <div>
               <label class={labelClasses()} for="setup-name">Name</label>
               <input
@@ -347,7 +350,7 @@ export function SetupFormModal(props: SetupFormModalProps) {
               aria-invalid={touched() && !valid().thesis}
             />
           </div>
-          <div class="mt-150 grid grid-cols-1 gap-200 sm:grid-cols-2">
+          <div class="mt-150 grid grid-cols-1 gap-200">
             <div>
               <span class={labelClasses()}>Direction</span>
               <div class="flex gap-100">
@@ -396,7 +399,7 @@ export function SetupFormModal(props: SetupFormModalProps) {
 
         <section aria-label="Levels" class="mt-250">
           <h4 class="text-50 font-700 uppercase tracking-[.08em] text-caption">Levels &amp; risk</h4>
-          <div class="mt-150 grid grid-cols-2 gap-200 lg:grid-cols-4">
+          <div class="mt-150 grid grid-cols-2 gap-200">
             <LevelField
               id="setup-entry"
               label="Entry"
@@ -454,21 +457,53 @@ export function SetupFormModal(props: SetupFormModalProps) {
           </div>
         </section>
 
-        <section aria-label="Chart preview" class="mt-250">
-          <h4 class="text-50 font-700 uppercase tracking-[.08em] text-caption">Chart preview</h4>
-          <Show when={chartTicker()} keyed>
-            <div class="mt-150">
-              <SetupChartPreview ticker={chartTicker()} fallback={<ChartSkeleton />} />
-            </div>
-          </Show>
-        </section>
-
         <Show when={touched() && !formValid()}>
           <p class="mt-200 text-75 font-600 text-neg" role="alert">
             Fill the required fields — ticker, thesis, entry, stop loss and target — to save.
           </p>
         </Show>
       </form>
+        </div>
+
+        {/* Chart focus pane — sticky on desktop so it stays in view while editing. */}
+        <aside aria-label="Chart" class="min-w-0 border-t border-line bg-surface-2 lg:border-t-0">
+          <div class="p-250 lg:sticky lg:top-0">
+            <div class="flex flex-wrap items-end justify-between gap-100">
+              <div>
+                <h4 class="text-50 font-700 uppercase tracking-[.08em] text-caption">Chart</h4>
+                <p class="mt-50 text-200 font-700 tabular-nums">
+                  {chartTicker() ? chartTicker().toUpperCase() : "—"}
+                  <span class="ml-100 text-75 font-600 text-muted">daily · seeded preview</span>
+                </p>
+              </div>
+              <div class="flex flex-wrap gap-x-200 gap-y-50 text-75 tabular-nums">
+                <span class="text-muted">Entry <strong class="text-ink">{fields().entry || "—"}</strong></span>
+                <span class="text-neg">Stop <strong>{fields().stopLoss || "—"}</strong></span>
+                <span class="text-pos">Target <strong>{fields().target || "—"}</strong></span>
+                <span class="text-muted">R/R <strong class="text-ink">{autoRR()}</strong></span>
+              </div>
+            </div>
+            <div class="mt-150">
+              <Show
+                when={chartTicker()}
+                keyed
+                fallback={
+                  <div class="grid h-[460px] w-full place-items-center rounded-200 border border-dashed border-line bg-surface-1 p-250 text-center">
+                    <p class="max-w-[36ch] text-100 text-muted">
+                      Enter a ticker to preview its chart — e.g. NVDA, BTC, BBCA.
+                    </p>
+                  </div>
+                }
+              >
+                {ticker => <SetupChartPreview ticker={ticker} height={460} fallback={<ChartSkeleton />} />}
+              </Show>
+            </div>
+            <p class="mt-100 text-50 text-caption">
+              Seeded sample series for layout preview — not live market data.
+            </p>
+          </div>
+        </aside>
+      </div>
     </Modal>
   );
 }

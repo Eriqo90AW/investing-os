@@ -164,9 +164,10 @@ is what caught the dark accent failing the lightness band as a *mark* while bein
 | `src/routes/setups.tsx` | The setup workspace: create/edit tracked setups and agent-created drafts. |
 | `src/routes/screener.tsx` | The quant screener across the US, crypto and IHSG universes. |
 | `src/lib/setups-store.ts` | Shared setups store (localStorage-backed) and status/universe metadata. |
-| `src/lib/agent/` | Shared agent state, route context snapshots, and deterministic local actions. |
+| `src/lib/agent/` | Shared agent state, route context snapshots, deterministic local actions, and session-scoped thread persistence. |
 | `src/lib/screener-store.ts` | Saved declarative screener rules created manually or by the agent. |
-| `src/components/agent/InvestingAgent.tsx` | Persistent agent bar and conversation panel. |
+| `src/lib/settings-store.ts` | Global settings-modal state, shared by the navbar and the agent panel. |
+| `src/components/agent/` | Agent launcher, conversation panel, message bubbles/action cards, composer, markdown-lite renderer, and route-aware suggestions. |
 | `src/routes/api/agent/turn.ts` | OpenCode Zen relay for session-scoped research requests. |
 | `src/lib/setup-generator.ts` | Deterministic mock setup generator and seeded per-ticker candles. |
 | `src/lib/screener-data.ts` | Screener universes, instrument fixtures, and preset quant rule bundles. |
@@ -200,9 +201,11 @@ up) and a random walk can't guarantee that.
 
 ### Agent workspace
 
-The app includes a persistent Investing OS Agent bar mounted above every route. It receives a compact snapshot of the current page and can perform local actions through the same shared stores used by the manual UI. Saying "Add new setup" creates an editable draft in the setup workspace and dashboard immediately. Asking for a new screener creates a saved rule bundle that can be activated on `/screener`.
+The app includes a persistent Investing OS Agent mounted above every route. A collapsed launcher floats on the right edge (above the mobile dock on phones, bottom-right on desktop); it opens into a conversation panel — a floating card on desktop, a bottom sheet on mobile — with route-aware suggestion chips, animated typing state, markdown replies, and action cards that jump straight to what the agent created. `⌘J` / `Ctrl+J` toggles it from anywhere; `Esc` closes it.
 
-Research questions use an OpenCode Zen API key entered in Settings. The key is held in memory for the current browser session and sent only to the same-origin `/api/agent/turn` relay. It is not stored in localStorage, the setup store, or the conversation. The static export can render the workspace, but the live relay requires the server build.
+It receives a compact snapshot of the current page and can perform local actions through the same shared stores used by the manual UI. Saying "Add new setup" creates an editable draft in the setup workspace and dashboard immediately; the reply carries an "Open Setups" card. Asking for a new screener creates a saved rule bundle with an "Open Screener" card that can be activated on `/screener`. "What can you do?" explains local capabilities without a key.
+
+Research questions use an OpenCode Zen API key entered in Settings. The key is held in memory for the current browser session and sent only to the same-origin `/api/agent/turn` relay. It is not stored in localStorage, the setup store, or the conversation. The conversation thread itself is scoped to the tab session (`sessionStorage`), so it survives a reload but never crosses sessions — and the "Connect key" footer button opens Settings directly. The static export can render the workspace, but the live relay requires the server build.
 
 The agent context is data, not instructions. Each route supplies a versioned page snapshot with the visible dashboard fixtures, shared setups, screener state, route, and timestamp. User notes and imported text remain untrusted content.
 

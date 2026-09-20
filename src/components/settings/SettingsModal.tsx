@@ -13,9 +13,10 @@ const MODES: { value: ThemeMode; label: string; detail: string }[] = [
 
 function resetAll(): void {
   // Defaults mirror DEFAULT_PALETTE ("rustic") in palette.ts,
-  // DEFAULT_THEME ("light") in theme.ts, and null accent (palette owns it).
+  // DEFAULT_THEME ("system"/auto) in theme.ts, and null accent (the shared app
+  // accent — the same lime set for every style — is in charge).
   setPalette("rustic");
-  setMode("light");
+  setMode("system");
   setAccentHex(null);
 }
 
@@ -132,8 +133,9 @@ export function SettingsModal(props: { open: boolean; onClose: () => void }) {
             Accent
           </h3>
           <p class="mt-100 text-75 text-muted">
-            The secondary color for buttons, links, and highlights. Any color works — a
-            contrast-safe ramp is derived from it automatically.
+            The secondary color for buttons, links, and highlights — shared by all
+            three styles, so it stays the same when you switch styles. Any color
+            works; a contrast-safe ramp is derived from it automatically.
           </p>
           <div class="mt-150 flex items-center gap-150">
             <label
@@ -155,7 +157,7 @@ export function SettingsModal(props: { open: boolean; onClose: () => void }) {
               </p>
               <Show
                 when={accentHex() !== null}
-                fallback={<p class="text-75 text-muted">Using the style's own accent.</p>}
+                fallback={<p class="text-75 text-muted">Using the shared accent (electric lime).</p>}
               >
                 <button
                   type="button"

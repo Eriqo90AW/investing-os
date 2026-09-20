@@ -14,8 +14,9 @@ import { deriveAccent, hexToRgbChannels, type DerivedAccent } from "./accent-der
  * inline custom properties. Inline beats every stylesheet, which is exactly
  * what an override that must work under any palette needs.
  *
- * `null` means "the palette keeps its own accent". That stamps nothing, so
- * the default costs nothing.
+ * `null` means "the app keeps its own accent" — the same shared lime set for
+ * every style, so the accent colour persists across all three. That stamps
+ * nothing, so the default costs nothing.
  */
 
 /** Every property this module owns, so a reset can put them all back. */
@@ -46,7 +47,7 @@ const STORAGE_KEY = "ios-accent";
 /** The colour the viewer picked, or null for "whatever the palette chose". */
 const [accentHex, setAccentHexSignal] = createSignal<string | null>(null);
 
-/** The solved accent. Null when the palette is in charge. */
+/** The solved accent. Null when the shared app accent is in charge. */
 const derived = createMemo<DerivedAccent | null>(() => {
   const hex = accentHex();
   return hex ? deriveAccent(hex) : null;
@@ -118,7 +119,7 @@ export function initAccent(): void {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (isHex(raw)) stored = raw.toLowerCase();
     } catch {
-      /* fall through to the palette's own accent */
+      /* fall through to the app's own shared accent */
     }
     setAccentHexSignal(stored);
     stamp(stored);

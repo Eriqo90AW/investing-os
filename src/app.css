@@ -188,6 +188,49 @@
   .ticker-viewport:focus-within .ticker-track {
     animation-play-state: paused;
   }
+
+  /* --- Agent (floating assistant) --------------------------------------
+     Panel entrance, typing dots, launcher busy pulse — all token-driven and
+     collapsed by the global prefers-reduced-motion rule below. */
+  .agent-panel {
+    animation: agent-panel-in 180ms ease-out;
+    will-change: transform, opacity;
+  }
+
+  .agent-typing-dot {
+    animation: agent-typing 1.2s ease-in-out infinite;
+  }
+
+  .agent-typing-dot:nth-child(2) {
+    animation-delay: 150ms;
+  }
+
+  .agent-typing-dot:nth-child(3) {
+    animation-delay: 300ms;
+  }
+
+  .agent-pulse {
+    animation: agent-pulse 1.4s ease-in-out infinite;
+  }
+
+  /* Thin, token-toned scrollbar for the message thread. */
+  .agent-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: var(--c-color-gray-400) transparent;
+  }
+
+  .agent-scroll::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .agent-scroll::-webkit-scrollbar-thumb {
+    background: var(--c-color-gray-400);
+    border-radius: 999px;
+  }
+
+  .agent-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
 }
 
 /* Keyframes stay outside the cascade layer so the marquee timing survives
@@ -198,6 +241,42 @@
   }
   to {
     transform: translateX(-50%);
+  }
+}
+
+@keyframes agent-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes agent-typing {
+  0%,
+  60%,
+  100% {
+    opacity: 0.35;
+    transform: translateY(0);
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes agent-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.3;
+    transform: scale(0.75);
   }
 }
 

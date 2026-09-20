@@ -129,7 +129,20 @@ export function SetupList(props: { onEdit: (id: string) => void }) {
           }
         >
           {setup => (
-            <article class="px-200 md:px-250 py-200 hover:bg-surface-2 transition-colors">
+            <article
+              onClick={() => props.onEdit(setup.id)}
+              onKeyDown={event => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  props.onEdit(setup.id);
+                }
+              }}
+              tabindex="0"
+              role="button"
+              aria-label={`Edit ${setup.symbol} setup`}
+              title={`Edit ${setup.symbol} setup`}
+              class="px-200 md:px-250 py-200 hover:bg-surface-2 focus-visible:bg-surface-2 transition-colors cursor-pointer outline-none"
+            >
               <div class="lg:grid lg:grid-cols-[minmax(230px,1.6fr)_90px_90px_110px_105px_90px_120px] lg:gap-150 lg:items-center">
                 <div class="min-w-0">
                   <div class="flex items-center gap-100">
@@ -190,7 +203,11 @@ export function SetupList(props: { onEdit: (id: string) => void }) {
                     <dd class="mt-50 lg:mt-0 text-75 font-700">{setup.riskReward}</dd>
                   </div>
                 </dl>
-                <div class="mt-150 lg:mt-0 flex items-center lg:justify-end gap-100">
+                <div
+                  class="mt-150 lg:mt-0 flex items-center lg:justify-end gap-100"
+                  onClick={event => event.stopPropagation()}
+                  onKeyDown={event => event.stopPropagation()}
+                >
                   <Show
                     when={confirmingDelete() === setup.id}
                     fallback={

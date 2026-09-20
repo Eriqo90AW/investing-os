@@ -4,13 +4,16 @@ import { createHandler, StartServer } from "@solidjs/start/server";
 /**
  * Applied before hydration so a viewer who picked a theme never sees the other
  * one flash first. Mirrors the three-state resolution in styles/tokens.css.
+ * Also stamps the saved style (palette), falling back to rustic — the
+ * absolute first-load default alongside auto mode and the shared lime accent
+ * (which needs no stamp; it is the stylesheet default).
  */
-const THEME_BOOT = `(function(){try{var m=localStorage.getItem("ios-theme")||"system";var r=document.documentElement;r.classList.remove("NIGHT","DAY");if(m==="dark"){r.setAttribute("data-theme","dark");r.classList.add("NIGHT")}else if(m==="light"){r.setAttribute("data-theme","light");r.classList.add("DAY")}else{r.removeAttribute("data-theme")}}catch(e){}})()`;
+const THEME_BOOT = `(function(){try{var m=localStorage.getItem("ios-theme")||"system";var r=document.documentElement;r.classList.remove("NIGHT","DAY");if(m==="dark"){r.setAttribute("data-theme","dark");r.classList.add("NIGHT")}else if(m==="light"){r.setAttribute("data-theme","light");r.classList.add("DAY")}else{r.removeAttribute("data-theme")}var p=localStorage.getItem("ios-palette")||"rustic";if(p==="base"){r.removeAttribute("data-palette")}else if(p==="rustic"||p==="midnight"){r.setAttribute("data-palette",p)}else{r.setAttribute("data-palette","rustic")}}catch(e){}})()`;
 
 export default createHandler(() => (
   <StartServer
     document={({ assets, children, scripts }) => (
-      <html lang="en">
+      <html lang="en" data-palette="rustic">
         <head>
           <meta charset="utf-8" />
           <meta

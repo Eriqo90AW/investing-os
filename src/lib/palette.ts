@@ -37,12 +37,12 @@ export const PALETTES: PaletteMeta[] = [
     label: "Lime",
     note: "Electric lime on warm near-neutrals, with darker lime steps wherever the accent is used as text.",
     source: [
-      { name: "electric lime", hex: "#99e50b", role: "secondary, accent fill" },
+      { name: "electric lime", hex: "#99e50b", role: "the shared accent, all styles" },
       { name: "warm white", hex: "#fefdfc", role: "page ground" },
       { name: "warm ink", hex: "#19130f", role: "body text" },
     ],
     tension:
-      "The source lime is too bright for text on light surfaces, so the ramp keeps it for fills and uses darker lime for text.",
+      "The source lime is too bright for text on light surfaces, so the shared brand ramp keeps lime for fills and uses darker lime for text.",
   },
   {
     id: "rustic",
@@ -53,24 +53,24 @@ export const PALETTES: PaletteMeta[] = [
       { name: "dust grey", hex: "#ccc5b9", role: "dark-mode secondary text" },
       { name: "charcoal brown", hex: "#403d39", role: "dark surface-2, chart grid" },
       { name: "carbon black", hex: "#252422", role: "light ink, dark page ground" },
-      { name: "spicy paprika", hex: "#eb5e28", role: "accent ramp, chart slot 1" },
+      { name: "spicy paprika", hex: "#eb5e28", role: "sequential chart ramp" },
     ],
     tension:
-      "Paprika is 3.4:1 under white, so it cannot be the button ground. It became --c-color-paprika: fills only, never under text.",
+      "Paprika is 3.4:1 under white, so it never carries text or receives buttons. It lives on as --c-color-paprika: chart magnitude fills only.",
   },
   {
     id: "midnight",
     label: "Midnight",
-    note: "Princeton orange over indigo ink and platinum. The only warm thing on the page is the affordance.",
+    note: "Indigo ink depths over platinum neutrals. The lime accent is shared with every style, so the blues stay unambiguously data.",
     source: [
       { name: "indigo ink", hex: "#4329d6", role: "dark ground stack" },
       { name: "cornflower blue", hex: "#042dfb", role: "chart slot 2" },
       { name: "periwinkle", hex: "#0320fc", role: "sequential ramp" },
       { name: "platinum", hex: "#636f9c", role: "light neutral ramp" },
-      { name: "princeton orange", hex: "#ff8800", role: "accent fill" },
+      { name: "princeton orange", hex: "#ff8800", role: "retired accent (now shared lime)" },
     ],
     tension:
-      "Princeton orange is 2.4:1 under white. So the primary button inverts — bright orange ground, near-black ink, 7.5:1.",
+      "Princeton orange is 2.4:1 under white, so it could never be an ink — and with the accent now shared across styles, princeton steps out and the affordance is lime in every style.",
   },
 ];
 

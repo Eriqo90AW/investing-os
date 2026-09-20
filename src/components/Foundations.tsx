@@ -173,12 +173,12 @@ function PaletteAxis() {
 
       <p class="mt-200 text-75 text-muted max-w-[78ch]">
         Every palette covers the same two gaps the same way. A handful of source colours
-        cannot fill an 8-step accent ramp, a 6-step neutral ramp and four CVD-separable
-        chart slots, so the accent is extended into a full ramp and the neutrals are
-        interpolated along the palette's own light→dark axis. And none of these palettes
-        ships a green or a red: price direction is not a style choice, so{" "}
-        <code class="text-100">positive</code> / <code class="text-100">negative</code> are
-        identical in all three.
+        cannot fill a 6-step neutral ramp and four CVD-separable chart slots — and the
+        accent they would have needed is shared across styles, not owned by any one of
+        them — so the neutrals are interpolated along the palette's own light→dark axis.
+        And none of these palettes ships a green or a red: price direction is not a
+        style choice, so <code class="text-100">positive</code> /{" "}
+        <code class="text-100">negative</code> are identical in all three.
       </p>
 
       <div class="mt-500">
@@ -225,7 +225,7 @@ function PaletteAxis() {
               when={derived()}
               fallback={
                 <span class="text-75 text-caption">
-                  Nothing right now — the palette is in charge. Pick a colour in the header.
+                  Nothing right now — the shared accent is in charge. Pick a colour in the header.
                 </span>
               }
             >

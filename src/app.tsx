@@ -4,6 +4,8 @@ import { FileRoutes } from "@solidjs/start/router";
 import { Suspense } from "solid-js";
 import "./app.css";
 import { InvestingAgent } from "~/components/agent/InvestingAgent";
+import { SettingsModal } from "~/components/settings/SettingsModal";
+import { closeSettings, settingsOpenSignal } from "~/lib/settings-store";
 
 export default function App() {
   return (
@@ -16,6 +18,7 @@ export default function App() {
             content="Investment research, setup tracking, market signals, and agent-assisted analysis."
           />
           <Suspense>{props.children}</Suspense>
+          <SettingsModal open={settingsOpenSignal()} onClose={closeSettings} />
           <InvestingAgent />
         </MetaProvider>
       )}

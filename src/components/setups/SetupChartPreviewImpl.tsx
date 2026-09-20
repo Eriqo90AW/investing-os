@@ -4,10 +4,12 @@ import { ChartFrame, ChartSurface } from "../ChartFrame";
 import { createThemedChart } from "~/lib/chart-theme";
 import { setupCandles } from "~/lib/setup-generator";
 
-const HEIGHT = 220;
+const DEFAULT_HEIGHT = 220;
 
 export interface SetupChartPreviewProps {
   ticker: string;
+  /** Render height in px. Defaults to 220; the setup modal passes a larger value. */
+  height?: number;
 }
 
 /**
@@ -18,6 +20,7 @@ export interface SetupChartPreviewProps {
  */
 export default function SetupChartPreview(props: SetupChartPreviewProps) {
   let container: HTMLDivElement | undefined;
+  const height = () => props.height ?? DEFAULT_HEIGHT;
 
   const data = createMemo(() => setupCandles(props.ticker));
   const last = createMemo(() => data()[data().length - 1]);
@@ -31,7 +34,7 @@ export default function SetupChartPreview(props: SetupChartPreviewProps) {
 
   createThemedChart({
     container: () => container,
-    height: HEIGHT,
+    height: props.height ?? DEFAULT_HEIGHT,
     build: (chart, t) => {
       const price = chart.addSeries(CandlestickSeries, {
         upColor: t.up,
@@ -82,7 +85,7 @@ export default function SetupChartPreview(props: SetupChartPreviewProps) {
       )}
     >
       <ChartSurface
-        height={HEIGHT}
+        height={height()}
         ref={el => (container = el)}
         label={`${props.ticker.toUpperCase()} daily candlestick preview, 120 sessions of seeded sample data.`}
       />

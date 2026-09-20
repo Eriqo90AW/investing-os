@@ -8,8 +8,8 @@ import { accentHex, setAccentHex } from "~/lib/accent";
  * value and is spelled out on the spec page rather than hidden here.
  *
  * When no colour is picked the input still has to show something, so it shows
- * the palette's own fill — and the reset is hidden, because there is nothing
- * to reset to.
+ * the app's own shared accent — and the reset is hidden, because there is
+ * nothing to reset to.
  */
 export function AccentPicker() {
   const value = () => accentHex() ?? "#99e50b";
@@ -50,7 +50,7 @@ export function AccentPicker() {
         <button
           type="button"
           onClick={() => setAccentHex(null)}
-          title="Back to the palette's own accent"
+          title="Back to the shared accent"
           class="px-100 h-7 rounded-50 text-75 font-600 text-muted hover:text-ink transition cursor-pointer"
         >
           Reset

@@ -93,10 +93,10 @@ export function DashboardHero(props: { asOf: string }) {
 
 export function KpiGrid(props: { kpis: DashboardKpi[] }) {
   return (
-    <section class="mt-300 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-150" aria-label="Setup performance metrics">
+    <section class="mt-300 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 auto-rows-fr items-stretch gap-150" aria-label="Setup performance metrics">
       <For each={props.kpis}>
         {kpi => (
-          <article class="relative overflow-hidden rounded-200 border border-line bg-surface-1 p-200 min-h-[148px] group hover:border-hairline transition-colors">
+          <article class="relative flex h-[130px] flex-col overflow-hidden rounded-200 border border-line bg-surface-1 p-200 group hover:border-hairline transition-colors">
             <div class="flex items-start justify-between gap-150">
               <p class="text-75 font-600 text-muted">{kpi.label}</p>
               <Show when={kpi.label !== "Fear & Greed"}>
@@ -111,9 +111,9 @@ export function KpiGrid(props: { kpis: DashboardKpi[] }) {
             </div>
             <Show
               when={kpi.label === "Fear & Greed"}
-              fallback={<div class="mt-150 flex items-end justify-between gap-100"><div><div class="text-600 font-700 leading-none tracking-[-.02em] tabular-nums">{kpi.value}</div><div class="mt-100 text-75 text-caption">{kpi.detail}</div></div><KpiSparkline values={kpi.spark} positive={kpi.change >= 0} /></div>}
+              fallback={<div class="flex flex-1 items-center justify-between pt-1"><div><div class="text-600 font-700 leading-none tracking-[-.02em] tabular-nums">{kpi.value}</div><div class="mt-100 text-75 text-caption">{kpi.detail}</div></div><KpiSparkline values={kpi.spark} positive={kpi.change >= 0} /></div>}
             >
-              <div class="mt-50 flex justify-center" aria-label="Fear and Greed index">
+              <div class="flex min-h-0 flex-1 items-center justify-center [&_figure]:w-full [&_figure]:-translate-y-200 [&_svg]:max-h-[100px]" aria-label="Fear and Greed index">
                 <SentimentGauge value={Number(kpi.value)} label="Fear and Greed index" />
               </div>
             </Show>

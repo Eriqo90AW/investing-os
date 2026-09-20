@@ -17,12 +17,9 @@
         cornflower is the *data* blue, periwinkle is folded into the
         sequential ramp. Nothing is wasted and nothing collides.
 
-     2. Princeton orange is the accent, but #ff8800 is only 2.4:1 under white
-        and 3.7:1 even at its 600 step. It is not an ink. It *is* however
-        7.5:1 under near-black, so the primary button inverts: bright orange
-        ground, platinum-900 ink. That is the one structural difference from
-        the other two palettes, and it is the palette's signature.
-
+     2. Princeton orange was the accent, but #ff8800 is only 2.4:1 under
+         white - never an ink - and the accent is now shared across styles
+         (one lime affordance on every page), so it steps out entirely.
      3. Platinum is the neutral ramp in light mode. In dark mode the neutrals
         move onto the indigo axis instead — a midnight UI whose "grays" are
         grey would throw away the whole idea.
@@ -35,27 +32,16 @@
    =========================================================================== */
 
 :root[data-palette="midnight"] {
-  /* --- accent ramp: princeton orange (theme-invariant) ------------------
-     Step 500 is the accent as ink on the light ground (5.9:1). Step 400 is
-     the accent as ink on the dark ground (9.5:1) — the step this palette is
-     really built around, because midnight is the hero theme. The source
-     swatch #ff8800 is neither: it is the *fill*, and it lives on as
-     `--c-color-princeton`. ----------------------------------------------- */
-  --c-color-brand-100: #fff3e5;
-  --c-color-brand-200: #ffe7cc;
-  --c-color-brand-300: #ffcf99;
-  --c-color-brand-400: #ffa033;
-  --c-color-brand-500: #995200;
-  --c-color-brand-600: #7a4200;
-  --c-color-brand-700: #4d2800;
-  --c-color-brand-800: #331b00;
-
-  /* The signature swatch. Fills only — it never carries light text. */
-  --c-color-princeton: #ff8800;
+  /* The accent is no longer the palette's to choose: the brand ramp, the
+     accent / accent-fill pair, hyperlinks, `official` and chart slot 1 stay
+     the shared lime set owned by tokens.css, so the accent colour persists
+     across every style. This palette owns grounds, neutrals and the blue
+     depth axis — the affordance is the same lime everywhere, so the cornflower
+     ramp is unambiguously data, and princeton orange is gone for good. */
 
   /* --- blue ramp: cornflower ---------------------------------------------
-     Chart slot 2, and still never an affordance: in this palette the
-     affordance is orange, so a blue mark is unambiguously data. ----------- */
+     Chart slot 2, and still never an affordance: the affordance is the shared
+     lime accent everywhere, so a blue mark is unambiguously data. --------- */
   --c-color-blue-100: #e6eaff;
   --c-color-blue-200: #cdd5fe;
   --c-color-blue-300: #9babfd;
@@ -66,9 +52,9 @@
   --c-color-blue-800: #021264;
 
   /* --- beige ramp: muted gold --------------------------------------------
-     Warnings have to stay warm, but princeton orange is spoken for. This
-     ramp is deliberately desaturated and yellower so "unaudited" never reads
-     as "primary action". --------------------------------------------------- */
+     Warnings have to stay warm, and their steps are kept darker and yellower
+     than anything the accent ships, so "unaudited" never reads as "primary
+     action". --------------------------------------------------------------- */
   --c-color-beige-100: #fdf6e7;
   --c-color-beige-200: #faedd0;
   --c-color-beige-300: #f4dda6;
@@ -87,8 +73,8 @@
   --c-color-gray-600: #50597c;
 
   /* --- semantic: LIGHT ----------------------------------------------------
-     A cool page with one warm affordance on it. Every orange thing here is
-     interactive; nothing else is orange. --------------------------------- */
+     A cool page whose one warm touch is the lime accent shared by every
+     style. Nothing else on it is bright or saturated. --------------------- */
   --c-color-background-1: #f5f6fa;
   --c-color-background-2: #ffffff;
   --c-color-surface-1: #ffffff;
@@ -96,16 +82,7 @@
   --c-color-text-primary: #14161f; /* platinum-900, 17.6:1 */
   --c-color-text-secondary: #50597c; /* 6.9:1 */
   --c-color-text-caption: #a2a8c3;
-  --c-color-text-hyperlink: #995200;
 
-  --c-color-accent: var(--c-color-brand-500);
-  /* The inversion: a bright ground under dark ink, not a dark ground under
-     white ink. 7.5:1 at rest, 4.9:1 on hover. */
-  --c-color-accent-fill: var(--c-color-princeton);
-  --c-color-accent-fill-hover: #cc6d00;
-  --c-color-on-accent: #14161f;
-
-  --c-color-official: #995200;
   --c-color-reminder: #d9a441;
   --c-color-no-access: #636f9c;
   --c-color-overlay-bg: rgb(20 22 31 / 0.6);
@@ -113,11 +90,10 @@
   --c-shadow-overlay: 0 8px 32px rgb(40 44 62 / 0.26), 0 1px 2px rgb(40 44 62 / 0.13);
 
   /* --- chart tokens: LIGHT ----------------------------------------------
-     Slot 1 follows the accent, as it always does. Slot 2 is cornflower
-     rather than the base blue, slots 3 and 4 are untouched — four
-     CVD-separable categoricals cannot come out of one blue-violet family,
-     so teal and purple stay. ----------------------------------------------- */
-  --c-chart-series-1: #cc6d00;
+     Slot 1 stays the shared lime accent, which the palette no longer
+     re-points. Slot 2 is cornflower rather than the base blue; slots 3 and 4
+     are untouched — four CVD-separable categoricals cannot come out of one
+     blue-violet family, so teal and purple stay. ---------------------------- */
   --c-chart-series-2: #3657fc;
   --c-chart-series-3: #0f91a8;
   --c-chart-series-4: #8a3ffc;
@@ -125,8 +101,6 @@
   --c-chart-grid: #e0e2eb;
   --c-chart-axis-text: #50597c;
   --c-chart-crosshair: #a2a8c3;
-  --c-chart-area-top: rgb(204 109 0 / 0.24);
-  --c-chart-area-bottom: rgb(204 109 0 / 0);
 
   /* Magnitude runs down the sky, not down the accent: this is where
      periwinkle and the deep cornflower steps get spent. */
@@ -142,7 +116,6 @@
   --c-chart-label-ink: #14161f;
   --c-chart-label-on-dark: #eff1f5;
 
-  --c-chart-on-series-1: var(--c-chart-label-ink);
   --c-chart-on-series-2: var(--c-chart-label-on-dark);
   --c-chart-on-series-3: var(--c-chart-label-ink);
   --c-chart-on-series-4: var(--c-chart-label-on-dark);
@@ -156,7 +129,8 @@
 
 /* --- DARK overrides -------------------------------------------------------
    The hero theme. Grounds are indigo ink, "grays" are indigo, ink is the
-   indigo-50 off-white — the only warm thing on the page is the accent.
+   indigo-50 off-white. The one bright thing on the page is the shared lime
+   accent; the blue chart marks are the local colour story.
    ------------------------------------------------------------------------- */
 @media (prefers-color-scheme: dark) {
   :root[data-palette="midnight"]:not([data-theme="light"]):not(.DAY) {
@@ -174,22 +148,15 @@
     --c-color-text-primary: #eceafb; /* indigo-ink-50, 16.3:1 */
     --c-color-text-secondary: #b4afd0; /* 9.2:1 */
     --c-color-text-caption: #756e9e;
-    --c-color-text-hyperlink: #ffa033;
-    --c-color-accent: var(--c-color-brand-400);
-    --c-color-official: var(--c-color-brand-400);
     --c-color-no-access: #9791bb;
     --c-color-positive-bg: var(--c-color-green-800);
     --c-color-negative-bg: var(--c-color-red-800);
-    --c-color-official-bg: var(--c-color-brand-800);
     --c-color-reminder-bg: #2b2418;
     --c-color-overlay-bg: rgb(9 6 30 / 0.7);
     --c-shadow-tiny: 0 1px 2px rgb(4 3 14 / 0.4), 0 4px 24px rgb(4 3 14 / 0.2);
     --c-shadow-overlay: 0 8px 32px #04030e, 0 1px 2px #04030e;
 
-    /* One step darker than the accent ink, same as the base palette does:
-       the accent is text, the series is a mark, and a mark sits inside the
-       dark-surface lightness band. */
-    --c-chart-series-1: #e07b0a;
+    /* Slot 2 re-steps one shade for the dark ground; the rest keep theirs. */
     --c-chart-series-2: #6881fd;
     --c-chart-series-3: #0f91a8;
     --c-chart-series-4: #8a3ffc;
@@ -197,8 +164,6 @@
     --c-chart-grid: #282152;
     --c-chart-axis-text: #b4afd0;
     --c-chart-crosshair: #756e9e;
-    --c-chart-area-top: rgb(255 160 51 / 0.26);
-    --c-chart-area-bottom: rgb(255 160 51 / 0);
 
     --c-chart-seq-1: #021b97;
     --c-chart-seq-2: #2f4ae0;
@@ -213,10 +178,6 @@
 
     --c-chart-other: #8b84ad;
 
-    --c-chart-on-series-1: var(--c-chart-label-ink);
-    --c-chart-on-series-2: var(--c-chart-label-ink);
-    --c-chart-on-series-3: var(--c-chart-label-ink);
-    --c-chart-on-series-4: var(--c-chart-label-on-dark);
     --c-chart-on-other: var(--c-chart-label-ink);
 
     --c-chart-on-seq-1: var(--c-chart-label-on-dark);
@@ -248,19 +209,15 @@
   --c-color-text-primary: #eceafb;
   --c-color-text-secondary: #b4afd0;
   --c-color-text-caption: #756e9e;
-  --c-color-text-hyperlink: #ffa033;
-  --c-color-accent: var(--c-color-brand-400);
-  --c-color-official: var(--c-color-brand-400);
   --c-color-no-access: #9791bb;
   --c-color-positive-bg: var(--c-color-green-800);
   --c-color-negative-bg: var(--c-color-red-800);
-  --c-color-official-bg: var(--c-color-brand-800);
   --c-color-reminder-bg: #2b2418;
   --c-color-overlay-bg: rgb(9 6 30 / 0.7);
   --c-shadow-tiny: 0 1px 2px rgb(4 3 14 / 0.4), 0 4px 24px rgb(4 3 14 / 0.2);
   --c-shadow-overlay: 0 8px 32px #04030e, 0 1px 2px #04030e;
 
-  --c-chart-series-1: #e07b0a;
+  /* Slot 2 re-steps one shade for the dark ground; the rest keep theirs. */
   --c-chart-series-2: #6881fd;
   --c-chart-series-3: #0f91a8;
   --c-chart-series-4: #8a3ffc;
@@ -268,8 +225,6 @@
   --c-chart-grid: #282152;
   --c-chart-axis-text: #b4afd0;
   --c-chart-crosshair: #756e9e;
-  --c-chart-area-top: rgb(255 160 51 / 0.26);
-  --c-chart-area-bottom: rgb(255 160 51 / 0);
 
   --c-chart-seq-1: #021b97;
   --c-chart-seq-2: #2f4ae0;
@@ -284,10 +239,6 @@
 
   --c-chart-other: #8b84ad;
 
-  --c-chart-on-series-1: var(--c-chart-label-ink);
-  --c-chart-on-series-2: var(--c-chart-label-ink);
-  --c-chart-on-series-3: var(--c-chart-label-ink);
-  --c-chart-on-series-4: var(--c-chart-label-on-dark);
   --c-chart-on-other: var(--c-chart-label-ink);
 
   --c-chart-on-seq-1: var(--c-chart-label-on-dark);

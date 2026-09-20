@@ -5,7 +5,7 @@ const { once } = await import("node:events");
 
 const proc = spawn(CHROME, [
   "--headless",
-  "--remote-debugging-port=9333",
+  "--remote-debugging-port=9336",
   "--no-first-run",
   "--user-data-dir=" + process.env.TEMP + "\\accent-probe-profile",
   "about:blank",
@@ -16,7 +16,7 @@ let targets;
 for (let i = 0; i < 40; i++) {
   await wait(250);
   try {
-    const res = await fetch("http://127.0.0.1:9333/json/list");
+    const res = await fetch("http://127.0.0.1:9336/json/list");
     targets = await res.json();
     if (targets) break;
   } catch {}
@@ -49,7 +49,7 @@ async function evaljs(expression) {
 
 await send("Page.enable");
 await send("Page.navigate", { url: "http://localhost:5183/" });
-await wait(4000);
+await wait(9000);
 
 const readTok = `(() => {
   const cs = getComputedStyle(document.documentElement);
@@ -94,7 +94,7 @@ console.log("palette=rustic          :", await evaljs(readTok));
 
 // Hard reload: hydration path must restore the accent.
 await send("Page.navigate", { url: "http://localhost:5183/" });
-await wait(4000);
+await wait(9000);
 console.log("after hard reload       :", await evaljs(readTok));
 
 ws.close();

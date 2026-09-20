@@ -1,89 +1,154 @@
-import { For, Show, createMemo, createSignal } from "solid-js";
-import { Bot, ChevronDown, ChevronUp, KeyRound, Send, Sparkles, X } from "lucide-solid";
-import { useLocation } from "@solidjs/router";
+import { Show, createEffect, createMemo, createSignal, onCleanup, onMount } from "solid-js";
+import { useLocation, useNavigate } from "@solidjs/router";
 import { buildAgentContext, compactContext } from "~/lib/agent/context";
 import { runLocalAgentAction } from "~/lib/agent/actions";
 import {
   addAgentMessage,
   agentApiKey,
   agentBusy,
-  agentMessages,
+  agentHidden,
   agentModel,
   agentOpen,
+  beginAgentRequest,
+  clearAgentMessages,
   closeAgent,
+  hideAgentCompletely,
+  initAgentPersistence,
   openAgent,
   setAgentBusy,
+  stopAgentRequest,
 } from "~/lib/agent/store";
+import { AgentLauncher } from "./AgentLauncher";
+import { AgentPanel } from "./AgentPanel";
 
+/**
+ * Investing OS Agent — the persistent assistant mounted above every route.
+ * Composes the collapsed launcher, the open conversation panel, the mobile
+ * scrim, and all of the chat plumbing: local actions, the OpenCode relay,
+ * abort/stop, session persistence, and the keyboard shortcut (Ctrl+Enter).
+ * The viewer can hide the AI completely from inside the panel; the navbar
+ * button (or Ctrl+Enter) brings it back.
+ */
 export function InvestingAgent() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [prompt, setPrompt] = createSignal("");
   const context = createMemo(() => buildAgentContext(location.pathname));
+  let composerRef: HTMLTextAreaElement | undefined;
+  let launcherRef: HTMLButtonElement | undefined;
+  let hasToggled = false;
 
-  const submit = async (event: Event) => {
-    event.preventDefault();
-    const value = prompt().trim();
-    if (!value || agentBusy()) return;
-    setPrompt("");
-    addAgentMessage({ role: "user", content: value });
-    const local = runLocalAgentAction(value);
-    if (local.handled) return;
-    if (!agentApiKey()) {
-      addAgentMessage({ role: "assistant", content: "Connect an OpenCode API key in Settings to ask research questions. I can still create a local setup draft from the command bar." });
+  onMount(() => {
+    initAgentPersistence();
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      // Ctrl+Enter (Cmd+Enter on macOS) opens the agent; nothing else claims
+      // that chord. Open-only so it never steals a compose keystroke.
+      if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+        event.preventDefault();
+        if (!agentOpen()) openAgent();
+        return;
+      }
+      if (event.key === "Escape" && agentOpen()) closeAgent();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    onCleanup(() => window.removeEventListener("keydown", onKeyDown));
+  });
+
+  // Focus management: composer on open, launcher on close. Skip the first
+  // run so a fresh page load doesn't steal focus.
+  createEffect(() => {
+    const isOpen = agentOpen();
+    if (!hasToggled) {
+      hasToggled = true;
       return;
     }
+    queueMicrotask(() => (isOpen ? composerRef?.focus() : launcherRef?.focus()));
+  });
+
+  const submit = async (value?: string) => {
+    if (agentBusy()) return;
+    const text = (value ?? prompt()).trim();
+    if (!text) return;
+    setPrompt("");
+    addAgentMessage({ role: "user", content: text });
+
+    const local = runLocalAgentAction(text);
+    if (local.handled) {
+      if (local.navigate) navigate(local.navigate);
+      return;
+    }
+
+    if (!agentApiKey()) {
+      addAgentMessage({
+        role: "assistant",
+        content:
+          "I can't answer research questions yet — connect an OpenCode API key from the agent footer or Settings → Agent connection, then ask again. Local actions like setup drafts and screener rules work without a key.",
+      });
+      return;
+    }
+
     setAgentBusy(true);
+    const controller = beginAgentRequest();
     try {
       const response = await fetch("/api/agent/turn", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ apiKey: agentApiKey(), model: agentModel(), prompt: value, context: compactContext(context()) }),
+        body: JSON.stringify({
+          apiKey: agentApiKey(),
+          model: agentModel(),
+          prompt: text,
+          context: compactContext(context()),
+        }),
+        signal: controller.signal,
       });
-      const body = await response.json() as { text?: string; error?: string };
-      addAgentMessage({ role: "assistant", content: body.text ?? body.error ?? "The agent did not return a response." });
-    } catch {
-      addAgentMessage({ role: "assistant", content: "The agent connection failed. Check the OpenCode key and try again." });
+      const body = (await response.json()) as { text?: string; error?: string };
+      if (!response.ok) throw new Error(body.error ?? "Request failed.");
+      addAgentMessage({ role: "assistant", content: body.text ?? "The agent did not return a response." });
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") {
+        addAgentMessage({ role: "system", content: "Request cancelled." });
+      } else {
+        addAgentMessage({
+          role: "assistant",
+          content: "The agent connection failed. Check the OpenCode key in Settings and try again.",
+          error: true,
+          retryPrompt: text,
+        });
+      }
     } finally {
       setAgentBusy(false);
     }
   };
 
   return (
-    <>
-      <div id="agent-shell" class="fixed bottom-200 right-200 z-[60] w-[min(calc(100vw-2rem),520px)] pointer-events-none">
-        <div>
-          <div class="pointer-events-auto ml-auto w-full rounded-200 border border-line bg-surface-1/95 shadow-overlay backdrop-blur-xl">
-            <div class="flex items-center gap-100 px-150 py-100">
-              <span class="grid size-7 place-items-center rounded-100 bg-secondary text-on-secondary"><Bot size={15} /></span>
-              <button type="button" class="min-w-0 flex-1 text-left" onClick={() => (agentOpen() ? closeAgent() : openAgent())}>
-                <span class="block text-75 font-700 text-ink">Investing OS Agent</span>
-                <span class="block text-50 text-muted truncate">{context().page} context · {agentApiKey() ? agentModel() : "local mode"}</span>
-              </button>
-              <Show when={agentBusy()}><span class="text-50 text-accent">Working</span></Show>
-              <button type="button" onClick={() => (agentOpen() ? closeAgent() : openAgent())} class="grid size-7 place-items-center rounded-100 text-muted hover:bg-surface-2 hover:text-ink" aria-label={agentOpen() ? "Collapse agent" : "Expand agent"}>
-                <Show when={agentOpen()} fallback={<ChevronDown size={15} />}><ChevronUp size={15} /></Show>
-              </button>
-            </div>
-            <Show when={agentOpen()}>
-              <div class="border-t border-line">
-                <div class="max-h-[280px] overflow-y-auto px-150 py-150 space-y-100">
-                  <Show when={agentMessages().length === 0}>
-                    <p class="text-75 text-muted">Ask about this page, or say “Add new setup” to place a draft on the screen.</p>
-                  </Show>
-                  <For each={agentMessages()}>
-                    {message => <div class={message.role === "user" ? "ml-8 rounded-100 bg-accent-fill px-100 py-75 text-75 text-on-accent" : "mr-8 rounded-100 bg-surface-2 px-100 py-75 text-75 text-ink"}>{message.content}</div>}
-                  </For>
-                </div>
-                <form onSubmit={submit} class="flex items-end gap-100 border-t border-line p-100">
-                  <textarea value={prompt()} onInput={event => setPrompt(event.currentTarget.value)} rows="2" placeholder="Ask the agent or add a setup..." class="min-w-0 flex-1 resize-none rounded-100 bg-surface-2 px-100 py-75 text-75 text-ink outline-none placeholder:text-caption" />
-                  <button type="submit" class="grid size-8 place-items-center rounded-100 bg-accent-fill text-on-accent disabled:opacity-50" disabled={!prompt().trim() || agentBusy()} aria-label="Send to agent"><Send size={14} /></button>
-                </form>
-                <div class="flex items-center justify-between px-150 pb-100 text-50 text-caption"><span class="inline-flex items-center gap-50"><Sparkles size={11} /> Context: {context().page}</span><Show when={!agentApiKey()}><span class="inline-flex items-center gap-50"><KeyRound size={11} /> Add key in Settings</span></Show></div>
-              </div>
-            </Show>
-          </div>
-        </div>
-      </div>
-    </>
+    <Show when={!agentHidden()}>
+      <Show when={agentOpen()}>
+        {/* Mobile scrim — desktop keeps the panel a floating, non-modal card. */}
+        <div
+          class="fixed inset-0 z-[44] bg-[var(--c-color-overlay-bg)] md:hidden"
+          onClick={closeAgent}
+          aria-hidden="true"
+        />
+        <AgentPanel
+          page={context().page}
+          prompt={prompt()}
+          busy={agentBusy()}
+          hasKey={!!agentApiKey()}
+          model={agentModel()}
+          textareaRef={el => (composerRef = el)}
+          onPromptChange={setPrompt}
+          onSubmit={submit}
+          onStop={stopAgentRequest}
+          onClose={closeAgent}
+          onHide={hideAgentCompletely}
+          onClear={clearAgentMessages}
+        />
+      </Show>
+
+      <Show when={!agentOpen()}>
+        <AgentLauncher busy={agentBusy()} onOpen={openAgent} ref={el => (launcherRef = el)} />
+      </Show>
+    </Show>
   );
 }

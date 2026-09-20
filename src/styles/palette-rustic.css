@@ -11,14 +11,14 @@
      floral white  #fffcf2    dust grey     #ccc5b9   charcoal brown #403d39
      carbon black  #252422    spicy paprika #eb5e28
 
-   Two jobs the source palette does not do, and how they are covered:
-     1. Five colours cannot fill an 8-step accent ramp, a 6-step neutral ramp
-        and four categorical chart slots. Paprika is extended into a full ramp
-        (tints toward floral white, shades toward carbon black); the neutrals
-        are interpolated along the floral-white -> dust-grey -> charcoal ->
-        carbon axis.
-     2. It has no green and no red. Price direction is not a style choice, so
-        positive/negative stay exactly where tokens.css put them.
+   Two jobs the source palette no longer does, and how they are covered:
+      1. The accent is shared across styles, so five colours only have to fill
+         a 6-step neutral ramp and the magnitude ramps. Paprika stays as one
+         swatch for chart fills and the sequential ramp; the neutrals are
+         interpolated along the floral-white -> dust-grey -> charcoal ->
+         carbon axis.
+      2. It has no green and no red. Price direction is not a style choice, so
+         positive/negative stay exactly where tokens.css put them.
 
    Selector weights are deliberate. Base dark is (0,3,0); rustic light is
    (0,2,0) so base dark still wins under it, and rustic dark is (0,4,0) so it
@@ -27,24 +27,13 @@
    =========================================================================== */
 
 :root[data-palette="rustic"] {
-  /* --- accent ramp: spicy paprika (theme-invariant) ---------------------
-     Same contract as the orange ramp it replaces. Step 500 is the deep step
-     that has to work twice — as ink on the page ground (4.9:1) and as a
-     ground under `on-accent` ink (5.1:1). Step 400 is the light-on-dark
-     counterpart: it is never a fill, it *is* the text (5.5:1 on carbon).
-     The source swatch itself, #eb5e28, sits between the two: gorgeous, but
-     3.4:1 under white, so it lives on as `--c-color-paprika` and is only
-     ever used where no text sits on it. ---------------------------------- */
-  --c-color-brand-100: #fdf1e9;
-  --c-color-brand-200: #fbdfd4;
-  --c-color-brand-300: #f7bfa9;
-  --c-color-brand-400: #f2794a;
-  --c-color-brand-500: #be4211;
-  --c-color-brand-600: #97350e;
-  --c-color-brand-700: #652309;
-  --c-color-brand-800: #321205;
-
-  /* The signature swatch, kept whole. Chart fills and gradients only. */
+  /* The accent is no longer the palette's to choose: the brand ramp, the
+     accent / accent-fill pair, hyperlinks, `official` and chart slot 1 stay
+     the shared lime set owned by tokens.css, so the accent colour persists
+     across every style. This palette owns grounds, neutrals and the magnitude
+     ramps. The source paprika lives on as --c-color-paprika: chart fills and
+     the sequential ramp only — never under text. It is 3.4:1 under white,
+     which is why it could never be the button colour either. */
   --c-color-paprika: #eb5e28;
 
   /* --- beige ramp: aged linen -------------------------------------------
@@ -83,14 +72,7 @@
   --c-color-text-primary: #252422; /* carbon black, 15.1:1 */
   --c-color-text-secondary: #6b6459; /* 5.7:1 */
   --c-color-text-caption: #ab9f8b;
-  --c-color-text-hyperlink: #be4211;
 
-  --c-color-accent: var(--c-color-brand-500);
-  --c-color-accent-fill: #be4211;
-  --c-color-accent-fill-hover: #97350e;
-  --c-color-on-accent: #fffcf2; /* floral white, not #fff — 5.1:1 */
-
-  --c-color-official: #be4211;
   --c-color-reminder: #c9ae77;
   --c-color-no-access: #8d8375;
   --c-color-overlay-bg: rgb(37 36 34 / 0.6);
@@ -98,18 +80,13 @@
   --c-shadow-overlay: 0 8px 32px rgb(64 61 57 / 0.26), 0 1px 2px rgb(64 61 57 / 0.13);
 
   /* --- chart tokens: LIGHT -----------------------------------------------
-     Slots 2-4 are unchanged. Four categorical colours have to survive every
-     CVD model, and a five-colour palette of one hue family plus neutrals
-     cannot supply them — so paprika takes slot 1 and the validated blue /
-     teal / purple keep the rest. The chrome (grid, axis, crosshair) is what
-     actually moves the chart into the palette. ---------------------------- */
-  --c-chart-series-1: #be4211;
+     Slots 2-4 are unchanged, and slot 1 stays the shared lime accent - the
+     palette no longer re-points it. The chrome (grid, axis, crosshair) is what
+     moves the chart into the palette. ---------------------------- */
 
   --c-chart-grid: #eae5d5;
   --c-chart-axis-text: #6b6459;
   --c-chart-crosshair: #ab9f8b;
-  --c-chart-area-top: rgb(235 94 40 / 0.26);
-  --c-chart-area-bottom: rgb(235 94 40 / 0);
 
   --c-chart-seq-1: #f6a482;
   --c-chart-seq-2: var(--c-color-paprika);
@@ -149,20 +126,14 @@
     --c-color-text-primary: #fffcf2; /* floral white, not #fff */
     --c-color-text-secondary: #ccc5b9; /* dust grey, 9.1:1 */
     --c-color-text-caption: #877962;
-    --c-color-text-hyperlink: #f2794a;
-    --c-color-accent: var(--c-color-brand-400);
-    --c-color-official: var(--c-color-brand-400);
     --c-color-positive-bg: var(--c-color-green-800);
     --c-color-negative-bg: var(--c-color-red-800);
-    --c-color-official-bg: var(--c-color-brand-800);
     --c-color-reminder-bg: #3a332a;
     --c-color-overlay-bg: rgb(26 25 24 / 0.64);
     --c-shadow-tiny: 0 1px 2px rgb(15 14 14 / 0.3), 0 4px 24px rgb(15 14 14 / 0.16);
     --c-shadow-overlay: 0 8px 32px #0f0e0e, 0 1px 2px #0f0e0e;
 
-    /* The source swatch finally gets to be itself: slot 1 carries no text,
-       and #eb5e28 sits inside the dark-surface lightness band. */
-    --c-chart-series-1: var(--c-color-paprika);
+    /* Slot 2 re-steps one shade for the dark ground; the rest keep their roles. */
     --c-chart-series-2: #6188ff;
     --c-chart-series-3: #0f91a8;
     --c-chart-series-4: #8a3ffc;
@@ -170,8 +141,6 @@
     --c-chart-grid: #403d39;
     --c-chart-axis-text: #ccc5b9;
     --c-chart-crosshair: #877962;
-    --c-chart-area-top: rgb(235 94 40 / 0.3);
-    --c-chart-area-bottom: rgb(235 94 40 / 0);
 
     --c-chart-seq-1: #7a2c0c;
     --c-chart-seq-2: #ab3f12;
@@ -221,18 +190,13 @@
   --c-color-text-primary: #fffcf2;
   --c-color-text-secondary: #ccc5b9;
   --c-color-text-caption: #877962;
-  --c-color-text-hyperlink: #f2794a;
-  --c-color-accent: var(--c-color-brand-400);
-  --c-color-official: var(--c-color-brand-400);
   --c-color-positive-bg: var(--c-color-green-800);
   --c-color-negative-bg: var(--c-color-red-800);
-  --c-color-official-bg: var(--c-color-brand-800);
   --c-color-reminder-bg: #3a332a;
   --c-color-overlay-bg: rgb(26 25 24 / 0.64);
   --c-shadow-tiny: 0 1px 2px rgb(15 14 14 / 0.3), 0 4px 24px rgb(15 14 14 / 0.16);
   --c-shadow-overlay: 0 8px 32px #0f0e0e, 0 1px 2px #0f0e0e;
 
-  --c-chart-series-1: var(--c-color-paprika);
   --c-chart-series-2: #6188ff;
   --c-chart-series-3: #0f91a8;
   --c-chart-series-4: #8a3ffc;
@@ -240,8 +204,6 @@
   --c-chart-grid: #403d39;
   --c-chart-axis-text: #ccc5b9;
   --c-chart-crosshair: #877962;
-  --c-chart-area-top: rgb(235 94 40 / 0.3);
-  --c-chart-area-bottom: rgb(235 94 40 / 0);
 
   --c-chart-seq-1: #7a2c0c;
   --c-chart-seq-2: #ab3f12;

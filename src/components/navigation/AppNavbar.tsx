@@ -13,8 +13,8 @@ import {
   X,
 } from "lucide-solid";
 import { A, useLocation } from "@solidjs/router";
-import { SettingsModal } from "~/components/settings/SettingsModal";
-import { agentOpen, toggleAgent } from "~/lib/agent/store";
+import { agentBusy, agentOpen, toggleAgent } from "~/lib/agent/store";
+import { openSettings } from "~/lib/settings-store";
 
 const NAV_ITEMS = [
   { label: "Overview", href: "/", icon: LayoutDashboard },
@@ -34,7 +34,6 @@ export function AppNavbar() {
   const location = useLocation();
   const [menuOpen, setMenuOpen] = createSignal(false);
   const [paletteOpen, setPaletteOpen] = createSignal(false);
-  const [settingsOpen, setSettingsOpen] = createSignal(false);
   const [query, setQuery] = createSignal("");
   let searchInput: HTMLInputElement | undefined;
 
@@ -130,10 +129,14 @@ export function AppNavbar() {
               type="button"
               onClick={toggleAgent}
               aria-pressed={agentOpen()}
+              title="Toggle agent (Ctrl+Enter)"
               class="inline-flex h-9 px-100 sm:px-150 items-center gap-100 rounded-100 bg-accent-fill text-on-accent text-75 font-700 hover:bg-accent-fill-hover transition-colors cursor-pointer"
             >
               <Bot size={16} />
               {agentOpen() ? "Hide AI" : "Ask AI"}
+              <Show when={agentBusy()}>
+                <span class="agent-pulse size-1.5 rounded-full bg-on-accent" aria-hidden="true" />
+              </Show>
             </button>
             <button
               type="button"
@@ -145,7 +148,7 @@ export function AppNavbar() {
             </button>
             <button
               type="button"
-              onClick={() => setSettingsOpen(true)}
+              onClick={openSettings}
               class="relative grid place-items-center w-9 h-9 rounded-100 text-muted hover:text-ink hover:bg-surface-2 transition-colors cursor-pointer"
               aria-label="Open settings"
             >
@@ -235,8 +238,6 @@ export function AppNavbar() {
           </section>
         </div>
       </Show>
-
-      <SettingsModal open={settingsOpen()} onClose={() => setSettingsOpen(false)} />
     </>
   );
 }
