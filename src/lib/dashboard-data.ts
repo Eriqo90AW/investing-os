@@ -104,11 +104,11 @@ export const dashboardData: DashboardData = {
       spark: spark(2, 4, 3, 7, 6, 9, 11, 10, 14, 16, 19),
     },
     {
-      label: "Expectancy",
-      value: "+0.42R",
-      detail: "Per closed setup",
-      change: 6.8,
-      spark: spark(20, 23, 22, 27, 26, 31, 34, 32, 37, 39, 42),
+      label: "Fear & Greed",
+      value: "74",
+      detail: "Greed · up from 52 last week",
+      change: 42.3,
+      spark: spark(52, 48, 55, 61, 65, 68, 74),
     },
   ],
   markets: [

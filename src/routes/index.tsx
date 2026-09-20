@@ -3,16 +3,16 @@ import { clientOnly } from "@solidjs/start";
 import { AppNavbar } from "~/components/navigation/AppNavbar";
 import { MarketPulseStrip } from "~/components/navigation/MarketPulseStrip";
 import {
-  AgentResearchPanel,
   AlphaBoard,
   DashboardHero,
   KpiGrid,
-  MarketRegime,
   MobileDock,
   PerformanceSummary,
   SignalRadar,
 } from "~/components/dashboard/DashboardSections";
+import { SetupOutcomes } from "~/components/dashboard/SetupOutcomes";
 import { dashboardData } from "~/lib/dashboard-data";
+import { initSetupsStore } from "~/lib/setups-store";
 import { initTheme } from "~/lib/theme";
 import { initPalette } from "~/lib/palette";
 import { initAccent } from "~/lib/accent";
@@ -37,6 +37,7 @@ export default function DashboardPage() {
   initTheme();
   initPalette();
   initAccent();
+  initSetupsStore();
 
   return (
     <>
@@ -52,7 +53,6 @@ export default function DashboardPage() {
       <main class="mx-auto max-w-[1440px] px-200 pb-800">
         <DashboardHero asOf={dashboardData.asOf} />
         <KpiGrid kpis={dashboardData.kpis} />
-        <MarketRegime markets={dashboardData.markets} />
 
         <section id="performance" class="mt-400 scroll-mt-28">
           <div class="grid xl:grid-cols-[minmax(0,2fr)_minmax(320px,.82fr)] gap-200">
@@ -65,12 +65,12 @@ export default function DashboardPage() {
                 fallback={<ChartSkeleton />}
               />
             </div>
-            <AgentResearchPanel suggestions={dashboardData.agentSuggestions} />
+            <SetupOutcomes />
           </div>
         </section>
 
-        <section class="mt-200 grid xl:grid-cols-[minmax(0,1.45fr)_minmax(360px,.75fr)] gap-200 items-start">
-          <AlphaBoard setups={dashboardData.setups} />
+        <section class="mt-200 grid xl:grid-cols-[minmax(0,1.45fr)_minmax(360px,.75fr)] gap-200">
+          <AlphaBoard />
           <SignalRadar signals={dashboardData.signals} />
         </section>
       </main>

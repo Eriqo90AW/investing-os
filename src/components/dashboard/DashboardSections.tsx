@@ -4,30 +4,28 @@ import {
   ArrowRight,
   ArrowUpRight,
   Bot,
-  BrainCircuit,
   CalendarClock,
-  Check,
-  ChevronRight,
   CircleDot,
   Database,
   ExternalLink,
+  Filter,
   Gauge,
   Plus,
   Radio,
-  Send,
   ShieldCheck,
-  Sparkles,
   Target,
-  X,
 } from "lucide-solid";
 import type {
-  AgentSuggestion,
   DashboardKpi,
-  InvestmentSetup,
-  MarketSnapshot,
-  SetupStatus,
   SignalEvent,
 } from "~/lib/dashboard-data";
+import {
+  SETUP_STATUSES,
+  setups,
+  statusClasses as sharedStatusClasses,
+} from "~/lib/setups-store";
+import { openAgent } from "~/lib/agent/store";
+import { SentimentGauge, bandFor, SENTIMENT_HISTORY } from "~/components/charts/svg/SentimentGauge";
 
 function KpiSparkline(props: { values: number[]; positive: boolean }) {
   const width = 112;
@@ -81,9 +79,12 @@ export function DashboardHero(props: { asOf: string }) {
             <span class="w-1.5 h-1.5 rounded-full bg-pos" />
             Updated {props.asOf}
           </span>
-          <button type="button" class="h-9 px-150 inline-flex items-center gap-100 rounded-100 bg-accent-fill text-on-accent text-75 font-700 hover:bg-accent-fill-hover transition-colors cursor-pointer">
+          <a
+            href="/setups"
+            class="h-9 px-150 inline-flex items-center gap-100 rounded-100 bg-accent-fill text-on-accent text-75 font-700 hover:bg-accent-fill-hover transition-colors cursor-pointer"
+          >
             <Plus size={16} /> New setup
-          </button>
+          </a>
         </div>
       </div>
     </section>
@@ -98,21 +99,24 @@ export function KpiGrid(props: { kpis: DashboardKpi[] }) {
           <article class="relative overflow-hidden rounded-200 border border-line bg-surface-1 p-200 min-h-[148px] group hover:border-hairline transition-colors">
             <div class="flex items-start justify-between gap-150">
               <p class="text-75 font-600 text-muted">{kpi.label}</p>
-              <span
-                class="inline-flex items-center gap-[2px] px-100 py-[3px] rounded-10 text-50 font-700 tabular-nums"
-                classList={{ "bg-pos-bg text-pos": kpi.change >= 0, "bg-neg-bg text-neg": kpi.change < 0 }}
-              >
-                <Show when={kpi.change >= 0} fallback={<ArrowDownRight size={11} />}><ArrowUpRight size={11} /></Show>
-                {Math.abs(kpi.change).toFixed(1)}%
-              </span>
+              <Show when={kpi.label !== "Fear & Greed"}>
+                <span
+                  class="inline-flex items-center gap-[2px] px-100 py-[3px] rounded-10 text-50 font-700 tabular-nums"
+                  classList={{ "bg-pos-bg text-pos": kpi.change >= 0, "bg-neg-bg text-neg": kpi.change < 0 }}
+                >
+                  <Show when={kpi.change >= 0} fallback={<ArrowDownRight size={11} />}><ArrowUpRight size={11} /></Show>
+                  {Math.abs(kpi.change).toFixed(1)}%
+                </span>
+              </Show>
             </div>
-            <div class="mt-150 flex items-end justify-between gap-100">
-              <div>
-                <div class="text-600 font-700 leading-none tracking-[-.02em] tabular-nums">{kpi.value}</div>
-                <div class="mt-100 text-75 text-caption">{kpi.detail}</div>
+            <Show
+              when={kpi.label === "Fear & Greed"}
+              fallback={<div class="mt-150 flex items-end justify-between gap-100"><div><div class="text-600 font-700 leading-none tracking-[-.02em] tabular-nums">{kpi.value}</div><div class="mt-100 text-75 text-caption">{kpi.detail}</div></div><KpiSparkline values={kpi.spark} positive={kpi.change >= 0} /></div>}
+            >
+              <div class="mt-50 flex justify-center" aria-label="Fear and Greed index">
+                <SentimentGauge value={Number(kpi.value)} label="Fear and Greed index" />
               </div>
-              <KpiSparkline values={kpi.spark} positive={kpi.change >= 0} />
-            </div>
+            </Show>
           </article>
         )}
       </For>
@@ -120,34 +124,40 @@ export function KpiGrid(props: { kpis: DashboardKpi[] }) {
   );
 }
 
-export function MarketRegime(props: { markets: MarketSnapshot[] }) {
+export function MarketSentiment(props: { value: number }) {
+  const band = () => bandFor(props.value);
+  const lastWeek = SENTIMENT_HISTORY[0];
+  const shift = props.value - lastWeek;
   return (
-    <section class="mt-150 rounded-200 border border-line bg-surface-1 overflow-hidden">
+    <section class="mt-150 rounded-200 border border-line bg-surface-1 overflow-hidden" aria-label="Market sentiment">
       <div class="px-200 py-150 flex items-center justify-between border-b border-line">
         <div class="flex items-center gap-100">
           <Gauge size={16} class="text-accent" />
-          <h2 class="text-100 font-700">Market regime</h2>
-          <span class="px-100 py-[2px] rounded-10 bg-reminder-bg text-reminder text-50 font-700 uppercase tracking-[.04em]">Risk on</span>
+          <h2 class="text-100 font-700">Market sentiment</h2>
+          <span class="px-100 py-[2px] rounded-10 text-50 font-700 tabular-nums" style={{ background: band().badge, color: band().ink }}>
+            {band().label} · {props.value}
+          </span>
         </div>
-        <p class="hidden sm:block text-50 text-caption">Cross-asset context, fixture snapshot</p>
+        <p class="hidden sm:block text-50 text-caption">Fear &amp; greed fixture snapshot</p>
       </div>
-      <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 divide-x divide-y xl:divide-y-0 divide-line">
-        <For each={props.markets}>
-          {market => (
-            <div class="px-200 py-150 min-w-0">
-              <div class="flex items-center justify-between gap-100">
-                <span class="text-75 font-700 text-ink">{market.symbol}</span>
-                <span class="text-50 text-caption truncate">{market.label}</span>
-              </div>
-              <div class="mt-100 flex items-baseline justify-between gap-100 tabular-nums">
-                <span class="text-100 font-600 truncate">{market.value}</span>
-                <span class="text-75 font-700" classList={{ "text-pos": market.change >= 0, "text-neg": market.change < 0 }}>
-                  {market.change >= 0 ? "+" : ""}{market.change.toFixed(2)}%
-                </span>
-              </div>
-            </div>
-          )}
-        </For>
+      <div class="px-250 py-200 grid gap-200 md:grid-cols-[280px_minmax(0,1fr)] items-center">
+        <SentimentGauge value={props.value} label="Fear and Greed" />
+        <dl class="grid gap-100 text-100">
+          <div class="flex items-baseline justify-between gap-150 border-b border-line pb-100">
+            <dt class="text-75 text-muted">Now</dt>
+            <dd class="font-700 tabular-nums">{props.value} · {band().label}</dd>
+          </div>
+          <div class="flex items-baseline justify-between gap-150 border-b border-line pb-100">
+            <dt class="text-75 text-muted">Last week</dt>
+            <dd class="font-700 tabular-nums">{lastWeek} · {bandFor(lastWeek).label}</dd>
+          </div>
+          <div class="flex items-baseline justify-between gap-150">
+            <dt class="text-75 text-muted">7-day shift</dt>
+            <dd class="font-700 tabular-nums" classList={{ "text-pos": shift >= 0, "text-neg": shift < 0 }}>
+              {shift >= 0 ? "▲" : "▼"} {Math.abs(shift)} pts
+            </dd>
+          </div>
+        </dl>
       </div>
     </section>
   );
@@ -187,121 +197,31 @@ export function PerformanceSummary() {
   );
 }
 
-export function AgentResearchPanel(props: { suggestions: AgentSuggestion[] }) {
-  const [prompt, setPrompt] = createSignal("");
-  const [submitted, setSubmitted] = createSignal<string | null>(null);
+const SETUP_FILTERS: Array<"all" | string> = ["all", ...SETUP_STATUSES];
 
-  const submit = (event: Event) => {
-    event.preventDefault();
-    const value = prompt().trim();
-    if (!value) return;
-    setSubmitted(value);
-  };
-
-  return (
-    <section id="agent" class="h-full rounded-200 border border-line bg-surface-1 overflow-hidden scroll-mt-28">
-      <div class="relative px-250 pt-250 pb-200 border-b border-line overflow-hidden">
-        <div class="absolute -right-8 -top-10 w-32 h-32 rounded-full bg-official-bg opacity-70" />
-        <div class="relative flex items-start justify-between gap-150">
-          <div class="flex items-center gap-150">
-            <span class="grid place-items-center w-10 h-10 rounded-100 bg-secondary text-on-secondary"><BrainCircuit size={20} /></span>
-            <div>
-              <h2 class="text-200 font-700">Investing OS Agent</h2>
-              <p class="mt-[2px] text-75 text-muted">Research copilot preview</p>
-            </div>
-          </div>
-          <span class="inline-flex items-center gap-50 px-100 py-[3px] rounded-10 bg-reminder-bg text-reminder text-50 font-700 uppercase tracking-[.04em]">
-            <Database size={11} /> Mock
-          </span>
-        </div>
-        <p class="relative mt-200 text-100 text-muted">
-          Ask across saved theses, market context, catalysts, and trading history.
-        </p>
-      </div>
-
-      <div class="p-200">
-        <Show
-          when={submitted()}
-          fallback={
-            <div class="space-y-100">
-              <p class="text-50 font-700 uppercase tracking-[.08em] text-caption">Try asking</p>
-              <For each={props.suggestions}>
-                {suggestion => (
-                  <button
-                    type="button"
-                    onClick={() => setPrompt(suggestion.prompt)}
-                    class="w-full px-150 py-150 flex items-center gap-100 rounded-100 border border-line bg-bg-1 text-left hover:border-hairline transition-colors cursor-pointer"
-                  >
-                    <Sparkles size={14} class="shrink-0 text-accent" />
-                    <span class="min-w-0 flex-1 text-75 font-600 text-ink">{suggestion.label}</span>
-                    <ChevronRight size={14} class="text-caption" />
-                  </button>
-                )}
-              </For>
-            </div>
-          }
-        >
-          <div class="rounded-100 border border-line bg-bg-1 p-150">
-            <div class="flex items-center justify-between gap-100">
-              <span class="text-50 font-700 uppercase tracking-[.08em] text-accent">Preview queued</span>
-              <button type="button" onClick={() => setSubmitted(null)} class="text-caption hover:text-ink cursor-pointer" aria-label="Dismiss preview"><X size={14} /></button>
-            </div>
-            <p class="mt-100 text-75 font-600 text-ink">{submitted()}</p>
-            <p class="mt-100 text-75 text-muted">The interface is wired. A live agent adapter can replace this mock response state later.</p>
-          </div>
-        </Show>
-
-        <form onSubmit={submit} class="mt-200 rounded-200 border border-line bg-surface-2 p-100 focus-within:border-accent transition-colors">
-          <label for="agent-prompt" class="sr-only">Ask Investing OS</label>
-          <textarea
-            id="agent-prompt"
-            value={prompt()}
-            onInput={event => setPrompt(event.currentTarget.value)}
-            rows="3"
-            placeholder="Ask about a setup, catalyst, or risk..."
-            class="block w-full resize-none bg-transparent px-100 py-100 text-100 text-ink placeholder:text-caption outline-none"
-          />
-          <div class="flex items-center justify-between gap-100">
-            <span class="px-100 text-50 text-caption">Uses dashboard mock context</span>
-            <button type="submit" class="grid place-items-center w-8 h-8 rounded-100 bg-accent-fill text-on-accent hover:bg-accent-fill-hover transition-colors cursor-pointer" aria-label="Send prompt">
-              <Send size={14} />
-            </button>
-          </div>
-        </form>
-      </div>
-    </section>
-  );
-}
-
-const SETUP_FILTERS: Array<"all" | SetupStatus> = ["all", "watching", "ready", "active", "won", "lost"];
-
-function statusClasses(status: SetupStatus): string {
-  if (status === "won") return "bg-pos-bg text-pos";
-  if (status === "lost") return "bg-neg-bg text-neg";
-  if (status === "active") return "bg-official-bg text-official";
-  if (status === "ready") return "bg-reminder-bg text-reminder";
-  return "bg-noaccess-bg text-noaccess";
-}
-
-export function AlphaBoard(props: { setups: InvestmentSetup[] }) {
+/** Reads the shared setups store — a setup saved anywhere shows up here. */
+export function AlphaBoard() {
   const [filter, setFilter] = createSignal<(typeof SETUP_FILTERS)[number]>("all");
-  const visible = createMemo(() => filter() === "all" ? props.setups : props.setups.filter(setup => setup.status === filter()));
+  const visible = createMemo(() => {
+    const all = setups();
+    return filter() === "all" ? all : all.filter(setup => setup.status === filter());
+  });
 
   return (
-    <section id="setups" class="rounded-200 border border-line bg-surface-1 overflow-hidden scroll-mt-28">
+    <section id="setups" class="h-full rounded-200 border border-line bg-surface-1 overflow-hidden scroll-mt-28">
       <div class="px-200 md:px-250 pt-200 md:pt-250 pb-150 border-b border-line">
         <div class="flex flex-col md:flex-row md:items-start justify-between gap-150">
           <div>
             <div class="flex items-center gap-100">
               <Target size={17} class="text-accent" />
               <h2 class="text-300 font-700 tracking-[-.01em]">Alpha board</h2>
-              <span class="px-100 py-[2px] rounded-10 bg-surface-2 text-caption text-50 font-700">{props.setups.length} setups</span>
+              <span class="px-100 py-[2px] rounded-10 bg-surface-2 text-caption text-50 font-700">{setups().length} setups</span>
             </div>
             <p class="mt-50 text-75 text-muted">Saved theses, entry logic, and outcome tracking in one queue.</p>
           </div>
-          <button type="button" class="self-start inline-flex items-center gap-100 text-75 font-700 text-accent hover:text-link cursor-pointer">
+          <a href="/setups" class="self-start inline-flex items-center gap-100 text-75 font-700 text-accent hover:text-link cursor-pointer">
             Open workspace <ArrowRight size={14} />
-          </button>
+          </a>
         </div>
         <div class="mt-200 flex items-center gap-50 overflow-x-auto pb-50" role="tablist" aria-label="Filter setups">
           <For each={SETUP_FILTERS}>
@@ -338,7 +258,7 @@ export function AlphaBoard(props: { setups: InvestmentSetup[] }) {
                     <div class="min-w-0">
                       <div class="flex flex-wrap items-center gap-100">
                         <span class="text-100 font-700">{setup.symbol}</span>
-                        <span class={`px-100 py-[2px] rounded-10 text-50 font-700 uppercase tracking-[.03em] ${statusClasses(setup.status)}`}>{setup.status}</span>
+                        <span class={`px-100 py-[2px] rounded-10 text-50 font-700 uppercase tracking-[.03em] ${sharedStatusClasses(setup.status)}`}>{setup.status}</span>
                         <span class="text-50 font-700 uppercase" classList={{ "text-pos": setup.direction === "long", "text-neg": setup.direction === "short" }}>{setup.direction}</span>
                       </div>
                       <p class="mt-50 text-75 text-muted truncate" title={setup.thesis}>{setup.thesis}</p>
@@ -447,10 +367,9 @@ export function SignalRadar(props: { signals: SignalEvent[] }) {
 
 export function MobileDock() {
   const items = [
-    { label: "Home", href: "#overview", icon: Gauge },
-    { label: "Setups", href: "#setups", icon: Target },
-    { label: "Agent", href: "#agent", icon: Bot },
-    { label: "Signals", href: "#signals", icon: Radio },
+    { label: "Home", href: "/", icon: Gauge },
+    { label: "Setups", href: "/setups", icon: Target },
+    { label: "Screener", href: "/screener", icon: Filter },
   ];
   return (
     <nav class="md:hidden fixed z-40 left-200 right-200 bottom-200 h-14 px-100 grid grid-cols-4 rounded-300 border border-line bg-bg-2/95 backdrop-blur-xl shadow-overlay" aria-label="Mobile navigation">
@@ -462,6 +381,15 @@ export function MobileDock() {
           </a>
         )}
       </For>
+      <button
+        type="button"
+        onClick={openAgent}
+        class="flex flex-col items-center justify-center gap-[2px] text-caption hover:text-accent transition-colors cursor-pointer"
+        aria-label="Open research agent"
+      >
+        <Bot size={17} />
+        <span class="text-50 font-700">Agent</span>
+      </button>
     </nav>
   );
 }

@@ -176,4 +176,35 @@
     color: var(--c-color-text-caption) !important;
     opacity: 0.55;
   }
+
+  /* Mock-market ticker: a seamless right-to-left marquee. The track holds two
+     identical halves, so translating it by -50% loops without a jump. */
+  .ticker-track {
+    animation: ticker-scroll 36s linear infinite;
+    will-change: transform;
+  }
+
+  .ticker-viewport:hover .ticker-track,
+  .ticker-viewport:focus-within .ticker-track {
+    animation-play-state: paused;
+  }
+}
+
+/* Keyframes stay outside the cascade layer so the marquee timing survives
+   layer ordering. */
+@keyframes ticker-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* The global rule only shortens durations, which would leave the ticker
+     mid-loop — remove it entirely so the strip rests readable. */
+  .ticker-track {
+    animation: none;
+  }
 }

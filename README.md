@@ -20,6 +20,8 @@ is how to run it; that file is what every value means.
 ```bash
 pnpm install
 pnpm dev          # dashboard: http://localhost:5180/
+                  # setup workspace: http://localhost:5180/setups
+                  # quant screener: http://localhost:5180/screener
                   # design system: http://localhost:5180/design
 ```
 
@@ -35,7 +37,7 @@ can't appear beside `pnpm-lock.yaml`.
 | `pnpm preview` | Serve the built output on 5180 |
 | `pnpm typecheck` | `tsc --noEmit` |
 
-`/` redirects to `/design`; nothing else is served from this app yet.
+`/` is the product dashboard; `/design` is the design-system reference.
 
 **Stack:** SolidStart 2 · Vite 8 · TypeScript (strict, `noUncheckedIndexedAccess`) ·
 Tailwind CSS v4 · TradingView Lightweight Charts v5.
@@ -159,6 +161,17 @@ is what caught the dark accent failing the lightness band as a *mark* while bein
 | `src/app.css` | The `@theme inline` mapping and base layer. The only Tailwind config. |
 | `src/routes/design.tsx` | The live design-system reference. |
 | `src/routes/index.tsx` | The mock-data Investing OS dashboard. |
+| `src/routes/setups.tsx` | The setup workspace: create/edit tracked setups and agent-created drafts. |
+| `src/routes/screener.tsx` | The quant screener across the US, crypto and IHSG universes. |
+| `src/lib/setups-store.ts` | Shared setups store (localStorage-backed) and status/universe metadata. |
+| `src/lib/agent/` | Shared agent state, route context snapshots, and deterministic local actions. |
+| `src/lib/screener-store.ts` | Saved declarative screener rules created manually or by the agent. |
+| `src/components/agent/InvestingAgent.tsx` | Persistent agent bar and conversation panel. |
+| `src/routes/api/agent/turn.ts` | OpenCode Zen relay for session-scoped research requests. |
+| `src/lib/setup-generator.ts` | Deterministic mock setup generator and seeded per-ticker candles. |
+| `src/lib/screener-data.ts` | Screener universes, instrument fixtures, and preset quant rule bundles. |
+| `src/components/ui/Modal.tsx` | Shared modal shell (overlay, focus, Escape, scroll lock). |
+| `src/components/setups/` | Setup form modal, chart preview, and workspace list. |
 | `src/lib/dashboard-data.ts` | Typed dashboard contract and deterministic product fixtures. |
 | `src/components/dashboard/` | KPIs, market regime, AI preview, setup board, and signal radar. |
 | `src/components/navigation/` | Product navbar, command search, and market pulse strip. |
@@ -185,6 +198,14 @@ hand-set figures instead, because those forms are judged on whether their *shape
 (do the slices sum to 100, does the waterfall close on its total, does the treemap square
 up) and a random walk can't guarantee that.
 
+### Agent workspace
+
+The app includes a persistent Investing OS Agent bar mounted above every route. It receives a compact snapshot of the current page and can perform local actions through the same shared stores used by the manual UI. Saying "Add new setup" creates an editable draft in the setup workspace and dashboard immediately. Asking for a new screener creates a saved rule bundle that can be activated on `/screener`.
+
+Research questions use an OpenCode Zen API key entered in Settings. The key is held in memory for the current browser session and sent only to the same-origin `/api/agent/turn` relay. It is not stored in localStorage, the setup store, or the conversation. The static export can render the workspace, but the live relay requires the server build.
+
+The agent context is data, not instructions. Each route supplies a versioned page snapshot with the visible dashboard fixtures, shared setups, screener state, route, and timestamp. User notes and imported text remain untrusted content.
+
 ### Static export
 
 ```bash
@@ -201,7 +222,6 @@ and strippable into a host that supplies its own document shell.
 ## Known gaps
 
 - **No tests and no linter.** `pnpm typecheck` is the only automated check in the repo.
-- **No backend.** Every dashboard value is a labelled fixture. The typed dashboard
-  contract is the replacement point for a future API adapter.
-- **Preview agent only.** The composer and prompt flows are interactive, but no model or
-  retrieval service is connected yet.
+- **No market-data backend.** Dashboard values remain labelled fixtures. The typed dashboard
+  contract is the replacement point for a future live-data adapter.
+- **Provider actions are intentionally bounded.** Local setup and screener actions are available without a provider key. OpenCode-backed answers currently return advice through the relay; structured model tool calls and live market adapters remain follow-up work.

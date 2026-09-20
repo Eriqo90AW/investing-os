@@ -8,7 +8,7 @@ const R = 62;
 const STROKE = 8;
 /** Leaves a visible 2px break after the rounded ends extend into the gap. */
 const GAP = (STROKE + 2) / R;
-const SENTIMENT_HISTORY = [52, 48, 55, 61, 65, 68] as const;
+export const SENTIMENT_HISTORY = [52, 48, 55, 61, 65, 68] as const;
 
 export const SENTIMENT_BANDS = [
   {
@@ -73,20 +73,6 @@ export function SentimentGauge(props: { value: number; label?: string }) {
   const band = createMemo(() => bandFor(props.value));
   const marker = createMemo(() => pointOn(angleOf(props.value), R));
   const pillWidth = createMemo(() => Math.max(52, Math.min(106, band().label.length * 7 + 18)));
-  const history = createMemo(() => [...SENTIMENT_HISTORY, props.value]);
-  const historyPoints = createMemo(() =>
-    history().map((value, index) => ({
-      value,
-      current: index === history().length - 1,
-      x: 4 + (index / (history().length - 1)) * 202,
-      y: 3 + ((80 - Math.min(80, Math.max(40, value))) / 40) * 18,
-    })),
-  );
-  const historyLine = createMemo(() =>
-    historyPoints()
-      .map((point, index) => `${index === 0 ? "M" : "L"}${point.x} ${point.y}`)
-      .join(" "),
-  );
   const shift = createMemo(() => props.value - SENTIMENT_HISTORY[0]);
 
   return (
@@ -146,37 +132,6 @@ export function SentimentGauge(props: { value: number; label?: string }) {
           {band().label}
         </text>
       </svg>
-
-      <figcaption class="mt-50">
-        <div class="flex items-center justify-between text-[9px] leading-tight">
-          <span class="text-caption">7D sentiment trail</span>
-          <span class="font-700 text-pos tabular-nums">▲ {shift()} pts</span>
-        </div>
-        <svg viewBox="0 0 210 24" class="mt-50 block h-6 w-full" aria-hidden="true">
-          <path
-            d={historyLine()}
-            fill="none"
-            stroke="var(--c-chart-crosshair)"
-            stroke-width="1.5"
-          />
-          <For each={historyPoints()}>
-            {point => (
-              <circle
-                cx={point.x}
-                cy={point.y}
-                r={point.current ? 3.5 : 2.5}
-                fill={bandFor(point.value).badge}
-                stroke="var(--c-color-surface-1)"
-                stroke-width="1.5"
-              />
-            )}
-          </For>
-        </svg>
-        <div class="mt-[2px] flex items-center justify-between text-[9px] leading-tight text-caption tabular-nums">
-          <span>Last week · {SENTIMENT_HISTORY[0]}</span>
-          <span>Today · {props.value}</span>
-        </div>
-      </figcaption>
     </figure>
   );
 }
