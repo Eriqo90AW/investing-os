@@ -10,6 +10,8 @@ export interface ModalProps {
   lockScroll?: boolean;
   /** Max panel width. Defaults to "760px". */
   width?: string;
+  /** Extra classes for the modal body region. */
+  contentClass?: string;
   onClose: () => void;
   children: JSX.Element;
   footer?: JSX.Element;
@@ -90,7 +92,7 @@ export function Modal(props: ModalProps) {
             </button>
           </header>
 
-          <div class="min-h-0 flex-1 overflow-y-auto">{props.children}</div>
+          <div class={`min-h-0 flex-1 overflow-y-auto ${props.contentClass ?? ""}`}>{props.children}</div>
 
           <Show when={props.footer}>
             <div class="shrink-0 border-t border-line bg-surface-2 px-250 py-200">
