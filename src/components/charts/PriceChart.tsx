@@ -88,38 +88,24 @@ export function PriceChart() {
     <ChartFrame
       title="BTC / USD · daily"
       note="Candlesticks with volume in its own pane. 180 sessions of sample data — hover to read a bar."
-      hero={() => (
-        <>
-          <div class="text-600 font-700 tabular-nums">{usd(shown().close)}</div>
-          <div
-            class="text-100 font-600 tabular-nums"
-            classList={{ "text-pos": change() >= 0, "text-neg": change() < 0 }}
-          >
-            {change() >= 0 ? "▲" : "▼"} {Math.abs(change()).toFixed(2)}%
-            <span class="text-caption font-400"> · {shown().time}</span>
-          </div>
-        </>
+      primaryValue={() => (
+        <div class="text-400 font-700 tabular-nums">{usd(shown().close)}</div>
+      )}
+      secondaryValue={() => (
+        <div
+          class="text-100 font-600 tabular-nums"
+          classList={{ "text-pos": change() >= 0, "text-neg": change() < 0 }}
+        >
+          {change() >= 0 ? "▲" : "▼"} {Math.abs(change()).toFixed(2)}%
+          <span class="text-caption font-400"> · {shown().time}</span>
+        </div>
       )}
       legend={legend}
-      tableHead={["Date", "Open", "High", "Low", "Close", "Volume"]}
-      tableRows={() =>
-        BTC_CANDLES.filter((_, i) => i % 20 === 0 || i === BTC_CANDLES.length - 1).map(c => {
-          const v = BTC_VOLUME.find(b => b.time === c.time);
-          return [
-            c.time,
-            usd(c.open),
-            usd(c.high),
-            usd(c.low),
-            usd(c.close),
-            compact(v?.value ?? 0, "$"),
-          ];
-        })
-      }
     >
       <ChartSurface
         height={HEIGHT}
         ref={el => (container = el)}
-        label="Bitcoin daily candlestick chart with volume, 180 sessions of sample data. The table view below lists the same figures."
+        label="Bitcoin daily candlestick chart with volume, 180 sessions of sample data."
       />
     </ChartFrame>
   );

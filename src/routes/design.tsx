@@ -18,7 +18,6 @@ import { AllocationStack } from "~/components/charts/svg/AllocationStack";
 import { ReturnsHeatmap } from "~/components/charts/svg/ReturnsHeatmap";
 import { Waterfall } from "~/components/charts/svg/Waterfall";
 import { RiskReturnScatter } from "~/components/charts/svg/RiskReturnScatter";
-import { ReturnHistogram } from "~/components/charts/svg/ReturnHistogram";
 import {
   ColorFoundations,
   Lede,
@@ -63,7 +62,6 @@ const FORM_TABLE: [string, string, string][] = [
   ["Follow how a total was built", "Waterfall bridge", "Direction pair, neutral totals"],
   ["Weigh two variables together", "Scatter", "Emphasis: ≤ 3 named + field"],
   ["Read magnitude across a grid", "Heatmap", "Sequential, or diverging around zero"],
-  ["See the shape of a distribution", "Histogram", "One hue — height is the data"],
   ["Read one current number", "Stat tile or hero figure", "None; it isn't a chart"],
 ];
 
@@ -218,8 +216,8 @@ export default function DesignSystemPage() {
                 carry a legend, and four or fewer are also labelled on the price axis.
               </li>
               <li>
-                <b class="text-ink">Every chart has a table view.</b> It is the non-visual
-                path to the same numbers, not an afterthought.
+                <b class="text-ink">Every chart carries a full aria-label.</b> Every series
+                and value, as text — the non-visual path to the same numbers.
               </li>
               <li>
                 <b class="text-ink">The grid recedes.</b> Horizontal hairlines only, in{" "}
@@ -258,7 +256,6 @@ export default function DesignSystemPage() {
             </div>
 
             <ReturnsHeatmap />
-            <ReturnHistogram />
           </div>
 
           <div class="mt-300 rounded-200 border border-line bg-surface-1 p-250">
@@ -313,7 +310,8 @@ export default function DesignSystemPage() {
               </li>
               <li>
                 <b class="text-ink">A label that won't fit isn't drawn.</b> Never clipped,
-                never shrunk to nothing; the tooltip and the table view keep it reachable.
+                never shrunk to nothing — pushed outside the mark where the value is the
+                point (pie slices, treemap tiles), or left to the tooltip.
               </li>
             </ul>
           </div>

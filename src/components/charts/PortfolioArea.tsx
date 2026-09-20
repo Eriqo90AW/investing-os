@@ -51,30 +51,22 @@ export function PortfolioArea() {
     <ChartFrame
       title="Portfolio net asset value"
       note="Single series, 180 days. Since inception, indexed in dollars rather than percent."
-      hero={() => (
-        <>
-          <div class="text-600 font-700 tabular-nums">{compact(shown().value, "$")}</div>
-          <div
-            class="text-100 font-600 tabular-nums"
-            classList={{ "text-pos": change() >= 0, "text-neg": change() < 0 }}
-          >
-            {change() >= 0 ? "▲" : "▼"} {Math.abs(change()).toFixed(2)}%
-            <span class="text-caption font-400"> · {shown().time}</span>
-          </div>
-        </>
+      primaryValue={() => (
+        <div class="text-400 font-700 tabular-nums">{compact(shown().value, "$")}</div>
       )}
-      tableHead={["Date", "NAV"]}
-      tableRows={() =>
-        PORTFOLIO.filter((_, i) => i % 20 === 0 || i === PORTFOLIO.length - 1).map(p => [
-          p.time,
-          `$${p.value.toLocaleString("en-US")}`,
-        ])
-      }
+      secondaryValue={() => (
+        <div
+          class="text-100 font-600 tabular-nums"
+          classList={{ "text-pos": change() >= 0, "text-neg": change() < 0 }}
+        >
+          {change() >= 0 ? "▲" : "▼"} {Math.abs(change()).toFixed(2)}%
+        </div>
+      )}
     >
       <ChartSurface
         height={HEIGHT}
         ref={el => (container = el)}
-        label="Portfolio net asset value over 180 days of sample data. The table view below lists the same figures."
+        label="Portfolio net asset value over 180 days of sample data."
       />
     </ChartFrame>
   );

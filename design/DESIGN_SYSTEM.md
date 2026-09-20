@@ -422,7 +422,7 @@ no sampling and no re-theme pass.
 | Follow how a total was built | Waterfall bridge | Direction pair, neutral totals |
 | Weigh two variables together | Scatter | Emphasis: ≤ 3 named + field |
 | Read magnitude across a grid | Heatmap | Diverging around zero |
-| See the shape of a distribution | Histogram | One hue |
+| Place one value on a named scale | **Gauge** | Diverging, four named bands |
 | Read one current number | Stat tile / hero figure | None — it isn't a chart |
 
 **The treemap is the market-share form.** Squarified layout (Bruls, Huizing & van Wijk):
@@ -431,6 +431,19 @@ the remaining rectangle so tiles come out near-square instead of as slivers. The
 degenerate cases fall out of the algorithm rather than being special-cased — one name at
 100% fills the square edge to edge, 90/10 splits it 90/10, four equal names give a clean
 2×2. Verified against the shipped function, not asserted.
+
+**It carries two variables, on two channels.** Area is share; hue is the one-day change,
+on the diverging scale. Colouring the tiles by share as well would double-encode it —
+spending the one free channel to restate what the sizes already say, across categories
+with no natural order to ramp along. The share label is the last thing dropped as a tile
+shrinks, ahead of the ticker and the company name, because it is the value the chart is
+about.
+
+**The gauge is for a value's *position on a named scale*.** Four bands — two bearish,
+two bullish — with the saturated steps at the extremes so "extremely" reads as further
+out in either direction. It is the one case where a dial beats a bar: the bands are named
+regions rather than magnitudes, and a needle pointing into a named region is the message.
+The reading is never colour-alone; the band's name is printed under the number.
 
 **The pie and donut carry their own caveat, on the card.** They answer exactly one
 question — "is anything dominant" — and the spec says so in the note where a reader will
@@ -446,13 +459,18 @@ one thing a pie cannot show.
   overlapping dots. Never a stroke around a mark; a stroke is ink that isn't data.
 - **A label that won't fit is not drawn.** Never clipped, never shrunk away. The treemap
   measures each tile against three thresholds (ticker / share / full name) and drops what
-  won't fit; the tooltip and the table view keep it reachable.
+  won't fit; push it outside the mark, or let the tooltip carry it.
 - **Direct labels don't stack.** Where two named scatter points sit close, the label
   flips to the other side of its dot rather than being nudged vertically off it.
 - **Bars are ≤ 24px with a 4px rounded data-end and a square baseline end.** Rounding
   both ends detaches the mark from its baseline and makes short bars read as pills.
-- **Every one has a table view and a hover readout.** The tooltip enhances and never
-  gates: its numbers are all in the table too.
+- **Every one has a hover readout and a full `aria-label`.** There is no table view: the
+  `aria-label` names every series and value, and the same detail appears on keyboard
+  focus as on hover. The trade is real and worth stating — a sighted reader who cannot
+  separate two hues no longer has a text fallback to fall back on.
+- **No drawing scales above 1:1.** `ChartCanvas` caps each figure at its own viewBox
+  width, because an SVG stretched to fill a card scales its type along with everything
+  else.
 
 ### 7.7 Picking the form
 
@@ -490,7 +508,7 @@ Every figure goes through `ChartFrame`, so the parts land in the same place each
 3. **Legend** for two or more series, with a 10px swatch. One series gets no legend box —
    the title names it.
 4. **The plot.**
-5. **Table view**, in a `<details>` — the same numbers, downsampled, as text.
+5. **`aria-label`** on the drawing — every series and value, as text.
 
 ### 7.10 Non-negotiables
 
@@ -502,7 +520,8 @@ Every figure goes through `ChartFrame`, so the parts land in the same place each
   the price axis (`title` on the series options).
 - **Direction is never color-alone.** ▲ / ▼ glyphs in the table, sign in the P&L readout,
   and `sr-only` "up" / "down" for screen readers.
-- **Every chart has a table view.** It is the non-visual path to the numbers.
+- **Every chart has an `aria-label` naming every series and value.** It is the non-visual
+  path to the numbers; there is no table view.
 - **Status colors are reserved.** `positive` / `negative` never stand in for a series.
 
 ---
@@ -546,8 +565,10 @@ rare component that needs a genuinely different treatment, not a different value
 - Never encode price direction with color alone — the `▲` / `▼` glyph is required.
 - Focus ring: 2px solid `accent` at 2px offset, in both themes. Never remove an outline
   without replacing it.
-- Every chart ships a `<details>` table view and an `aria-label` naming the series, so
-  nothing is reachable only by hovering.
+- Every chart ships an `aria-label` naming every series and value, so nothing is
+  reachable only by hovering. The `<details>` table views were removed at the owner's
+  request; the `aria-label` is now the sole non-visual path, and there is no text
+  fallback for a sighted reader who cannot separate two hues.
 - A label set inside a filled mark takes its paired `--c-chart-on-*` token. Every fill /
   ink pair in the system clears 4.5:1 — that is what fixed the number of sequential steps
   at four rather than five.

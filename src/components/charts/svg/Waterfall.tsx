@@ -1,12 +1,12 @@
 import { For, createMemo } from "solid-js";
 import { ChartFrame } from "../../ChartFrame";
-import { AxisText, ChartTip, GridLine, barPath, createTip } from "./parts";
+import { AxisText, ChartCanvas, ChartTip, GridLine, barPath, createTip } from "./parts";
 import { ATTRIBUTION } from "~/lib/chart-data";
 
 const W = 620;
 const H = 300;
 const PAD = { top: 18, right: 12, bottom: 44, left: 52 };
-const BAR = 40;
+const BAR = 24; // the mark cap — the band's leftover is air
 
 const money = (n: number) => `$${n.toFixed(1)}M`;
 const delta = (n: number) => `${n >= 0 ? "+" : "−"}$${Math.abs(n).toFixed(1)}M`;
@@ -54,7 +54,7 @@ export function Waterfall() {
     return out;
   });
 
-  const { tip, setTip, clear } = createTip();
+  const { tip, clear, at } = createTip();
 
   return (
     <ChartFrame
@@ -65,19 +65,15 @@ export function Waterfall() {
         { label: "Subtracted", color: "var(--c-chart-down)" },
         { label: "Total", color: "var(--c-chart-other)" },
       ]}
-      tableHead={["Step", "Amount"]}
-      tableRows={() =>
-        ATTRIBUTION.map(s => [s.label, s.total ? money(s.value) : delta(s.value)])
-      }
     >
-      <div class="relative">
+      <ChartCanvas width={W}>
         <svg
           viewBox={`0 0 ${W} ${H}`}
           class="w-full h-auto block overflow-visible"
           role="img"
           aria-label={`Contribution to net asset value from ${money(
             ATTRIBUTION[0]!.value,
-          )} to ${money(ATTRIBUTION[ATTRIBUTION.length - 1]!.value)}. The table view below lists every step.`}
+          )} to ${money(ATTRIBUTION[ATTRIBUTION.length - 1]!.value)}.`}
         >
           <For each={ticks()}>
             {t => (
@@ -101,42 +97,28 @@ export function Waterfall() {
                   : col.value >= 0
                     ? "var(--c-chart-up)"
                     : "var(--c-chart-down)";
+              const showTip = (e: { currentTarget: SVGElement }) =>
+                at(
+                  e,
+                  { x: cx(), y: top(), width: W },
+                  {
+                    rows: [
+                      {
+                        label: col.label,
+                        value: col.total ? money(col.value) : delta(col.value),
+                        color: fill(),
+                      },
+                    ],
+                  },
+                );
 
               return (
                 <g
                   tabindex="0"
                   class="outline-none cursor-pointer"
-                  onPointerEnter={e => {
-                    const svg = e.currentTarget.ownerSVGElement!;
-                    const s = svg.getBoundingClientRect().width / W;
-                    setTip({
-                      x: cx() * s,
-                      y: top() * s,
-                      rows: [
-                        {
-                          label: col.label,
-                          value: col.total ? money(col.value) : delta(col.value),
-                          color: fill(),
-                        },
-                      ],
-                    });
-                  }}
+                  onPointerEnter={showTip}
                   onPointerLeave={clear}
-                  onFocus={e => {
-                    const svg = e.currentTarget.ownerSVGElement!;
-                    const s = svg.getBoundingClientRect().width / W;
-                    setTip({
-                      x: cx() * s,
-                      y: top() * s,
-                      rows: [
-                        {
-                          label: col.label,
-                          value: col.total ? money(col.value) : delta(col.value),
-                          color: fill(),
-                        },
-                      ],
-                    });
-                  }}
+                  onFocus={showTip}
                   onBlur={clear}
                 >
                   <title>
@@ -199,8 +181,8 @@ export function Waterfall() {
             }}
           </For>
         </svg>
-        <ChartTip state={tip()} width={W} />
-      </div>
+        <ChartTip state={tip()} />
+      </ChartCanvas>
     </ChartFrame>
   );
 }

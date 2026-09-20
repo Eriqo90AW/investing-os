@@ -102,27 +102,12 @@ export function ComparisonLines() {
     <ChartFrame
       title="Relative performance, rebased to 100"
       note="Four assets on one axis. Toggle a series off — the others keep their colors."
-      hero={() => (
+      secondaryValue={() => (
         <div class="text-75 text-caption tabular-nums">
           {hoverTime() ?? `${ASSETS[0].data[0]?.time} → ${ASSETS[0].data[ASSETS[0].data.length - 1]?.time}`}
         </div>
       )}
       legend={legend}
-      tableHead={["Date", "BTC", "ETH", "SOL", "XRP"]}
-      tableRows={() =>
-        COMPARISON.BTC.filter((_, i) => i % 20 === 0 || i === COMPARISON.BTC.length - 1).map(
-          p => {
-            const idx = COMPARISON.BTC.findIndex(x => x.time === p.time);
-            return [
-              p.time,
-              COMPARISON.BTC[idx]?.value.toFixed(1) ?? "—",
-              COMPARISON.ETH[idx]?.value.toFixed(1) ?? "—",
-              COMPARISON.SOL[idx]?.value.toFixed(1) ?? "—",
-              COMPARISON.XRP[idx]?.value.toFixed(1) ?? "—",
-            ];
-          },
-        )
-      }
     >
       <div class="flex flex-wrap gap-100 pb-150">
         <For each={ASSETS}>
@@ -153,7 +138,7 @@ export function ComparisonLines() {
       <ChartSurface
         height={HEIGHT}
         ref={el => (container = el)}
-        label="Bitcoin, Ethereum, Solana and XRP rebased to 100 over 180 days of sample data. The table view below lists the same figures."
+        label="Bitcoin, Ethereum, Solana and XRP rebased to 100 over 180 days of sample data."
       />
     </ChartFrame>
   );

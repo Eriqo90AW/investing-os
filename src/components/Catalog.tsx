@@ -1,5 +1,6 @@
 import { For, createSignal } from "solid-js";
 import { SubHeading, Lede } from "./Foundations";
+import { SentimentGauge } from "./charts/svg/SentimentGauge";
 
 const TABS = ["Top", "Trending", "Watchlist", "Gainers", "New"] as const;
 const CHIPS = ["All", "DeFi", "Layer 1", "Stablecoins", "RWA", "Memes"] as const;
@@ -156,6 +157,96 @@ export function BadgesAndInputs() {
   );
 }
 
+const MARKET_CAP_TREND = [2.56, 2.59, 2.57, 2.63, 2.66, 2.64, 2.7, 2.68, 2.73, 2.75, 2.72, 2.78];
+const VOLUME_PROFILE = [42, 51, 46, 62, 71, 58, 78, 92, 84, 69, 63, 55];
+
+function MarketCapTrend() {
+  const width = 240;
+  const height = 64;
+  const inset = 3;
+  const min = Math.min(...MARKET_CAP_TREND);
+  const max = Math.max(...MARKET_CAP_TREND);
+  const points = MARKET_CAP_TREND.map((value, index) => ({
+    x: inset + (index / (MARKET_CAP_TREND.length - 1)) * (width - inset * 2),
+    y: inset + ((max - value) / (max - min)) * (height - inset * 2),
+  }));
+  const line = points.map((point, index) => `${index === 0 ? "M" : "L"}${point.x} ${point.y}`).join(" ");
+  const area = `${line} L${points.at(-1)!.x} ${height} L${points[0]!.x} ${height} Z`;
+
+  return (
+    <figure class="mt-auto pt-200" role="img" aria-label="Market cap rose from 2.56 to 2.78 trillion dollars over seven days.">
+      <div class="flex items-center justify-between text-50 text-caption tabular-nums">
+        <span>7D · $2.56T low</span>
+        <span>$2.81T high</span>
+      </div>
+      <svg viewBox={`0 0 ${width} ${height}`} class="mt-100 block w-full h-[64px]" preserveAspectRatio="none" aria-hidden="true">
+        <defs>
+          <linearGradient id="market-cap-fill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="var(--c-chart-up)" stop-opacity=".28" />
+            <stop offset="1" stop-color="var(--c-chart-up)" stop-opacity="0" />
+          </linearGradient>
+        </defs>
+        <path d={area} fill="url(#market-cap-fill)" />
+        <path d={line} fill="none" stroke="var(--c-chart-up)" stroke-width="2" vector-effect="non-scaling-stroke" />
+        <circle cx={points.at(-1)!.x} cy={points.at(-1)!.y} r="3.5" fill="var(--c-chart-up)" />
+        <circle cx={points.at(-1)!.x} cy={points.at(-1)!.y} r="1.5" fill="var(--c-color-surface-1)" />
+      </svg>
+    </figure>
+  );
+}
+
+function VolumeProfile() {
+  const max = Math.max(...VOLUME_PROFILE);
+
+  return (
+    <figure class="mt-auto pt-200" role="img" aria-label="Hourly volume peaked during the middle of the last 24 hours and has eased since.">
+      <div class="flex items-end justify-between gap-[5px] h-[68px] border-b border-line" aria-hidden="true">
+        <For each={VOLUME_PROFILE}>
+          {(value, index) => (
+            <span
+              class="flex-1 rounded-t-[3px]"
+              style={{
+                height: `${Math.max(8, (value / max) * 100)}%`,
+                background: index() >= VOLUME_PROFILE.length - 3
+                  ? "var(--c-chart-series-1)"
+                  : "var(--c-color-gray-300)",
+                opacity: index() >= VOLUME_PROFILE.length - 3 ? 1 : 0.72,
+              }}
+            />
+          )}
+        </For>
+      </div>
+      <figcaption class="mt-100 flex items-center justify-between text-50 text-caption tabular-nums">
+        <span>24 hours ago</span>
+        <span>Peak $11.8B/h</span>
+        <span>Now</span>
+      </figcaption>
+    </figure>
+  );
+}
+
+function LiquidationSplit() {
+  return (
+    <figure class="mt-auto pt-200" role="img" aria-label="Of 801.52 million dollars liquidated, 612.8 million were long positions and 188.72 million were short positions.">
+      <div class="flex items-center justify-between text-50 font-600 tabular-nums">
+        <span class="text-neg">Longs · $612.8M</span>
+        <span class="text-pos">Shorts · $188.72M</span>
+      </div>
+      <div class="mt-100 flex h-4 overflow-hidden rounded-50 bg-surface-2" aria-hidden="true">
+        <span class="h-full" style={{ width: "76.5%", background: "var(--c-chart-down)" }} />
+        <span class="h-full border-l-2 border-surface-1" style={{ width: "23.5%", background: "var(--c-chart-up)" }} />
+      </div>
+      <figcaption class="mt-150 flex items-center justify-between text-50 text-caption">
+        <span>76.5% long positions</span>
+        <span class="inline-flex items-center gap-50">
+          <span class="h-1.5 w-1.5 rounded-full bg-neg" aria-hidden="true" />
+          Leverage flush
+        </span>
+      </figcaption>
+    </figure>
+  );
+}
+
 export function StatTiles() {
   return (
     <>
@@ -165,28 +256,36 @@ export function StatTiles() {
         the screen — not a general-purpose card.
       </Lede>
       <div class="mt-200 grid gap-150 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-        <div class="rounded-200 border border-line bg-surface-1 p-200">
+        <div class="min-h-[216px] rounded-200 border border-line bg-surface-1 p-200 flex flex-col">
           <div class="text-75 font-500 text-muted">Market Cap</div>
-          <div class="mt-50 text-600 font-700 tabular-nums">$2.78T</div>
-          <div class="mt-100 inline-flex items-center px-100 py-[3px] rounded-10 text-50 font-600 bg-pos-bg text-pos">▲ 5.49%</div>
-        </div>
-        <div class="rounded-200 border border-line bg-surface-1 p-200">
-          <div class="text-75 font-500 text-muted">24h Volume</div>
-          <div class="mt-50 text-600 font-700 tabular-nums">$184.22B</div>
-          <div class="mt-100 inline-flex items-center px-100 py-[3px] rounded-10 text-50 font-600 bg-neg-bg text-neg">▼ 2.14%</div>
-        </div>
-        <div class="rounded-200 border border-line bg-surface-1 p-200">
-          <div class="text-75 font-500 text-muted">Liquidations (24h)</div>
-          <div class="mt-50 text-600 font-700 tabular-nums">$801.52M</div>
-          <div class="mt-100 inline-flex items-center px-100 py-[3px] rounded-10 text-50 font-600 bg-pos-bg text-pos">▲ 324.28%</div>
-        </div>
-        <div class="rounded-200 border border-line bg-surface-1 p-200">
-          <div class="text-75 font-500 text-muted">Fear &amp; Greed</div>
-          <div class="mt-50 text-600 font-700 tabular-nums">
-            74 <span class="text-100 font-500 text-muted">Greed</span>
+          <div class="mt-50 flex items-center justify-between gap-100">
+            <div class="text-600 font-700 tabular-nums">$2.78T</div>
+            <div class="inline-flex items-center px-100 py-[3px] rounded-10 text-50 font-600 bg-pos-bg text-pos">▲ 5.49%</div>
           </div>
-          <div class="mt-100 h-[6px] rounded-400 bg-surface-2 overflow-hidden">
-            <div class="h-full rounded-400 bg-pos" style={{ width: "74%" }} />
+          <MarketCapTrend />
+        </div>
+        <div class="min-h-[216px] rounded-200 border border-line bg-surface-1 p-200 flex flex-col">
+          <div class="text-75 font-500 text-muted">24h Volume</div>
+          <div class="mt-50 flex items-center justify-between gap-100">
+            <div class="text-600 font-700 tabular-nums">$184.22B</div>
+            <div class="inline-flex items-center px-100 py-[3px] rounded-10 text-50 font-600 bg-neg-bg text-neg">▼ 2.14%</div>
+          </div>
+          <VolumeProfile />
+        </div>
+        <div class="min-h-[216px] rounded-200 border border-line bg-surface-1 p-200 flex flex-col">
+          <div class="text-75 font-500 text-muted">Liquidations (24h)</div>
+          <div class="mt-50 flex items-center justify-between gap-100">
+            <div class="text-600 font-700 tabular-nums">$801.52M</div>
+            <div class="inline-flex items-center px-100 py-[3px] rounded-10 text-50 font-600 bg-neg-bg text-neg">▲ 324.28%</div>
+          </div>
+          <LiquidationSplit />
+        </div>
+        {/* The one tile whose value is a position on a named scale rather than
+            a magnitude, so it gets the dial instead of the meter bar. */}
+        <div class="min-h-[216px] rounded-200 border border-line bg-surface-1 p-200">
+          <div class="text-75 font-500 text-muted">Fear &amp; Greed</div>
+          <div class="mt-50">
+            <SentimentGauge value={74} label="Fear and Greed" />
           </div>
         </div>
       </div>

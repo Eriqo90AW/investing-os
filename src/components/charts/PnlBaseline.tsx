@@ -55,31 +55,24 @@ export function PnlBaseline() {
     <ChartFrame
       title="Unrealised P&L vs cost basis"
       note="A diverging measure with a true zero: two poles, neutral midpoint, no rainbow."
-      hero={() => (
-        <>
-          <div
-            class="text-600 font-700 tabular-nums"
-            classList={{ "text-pos": shown().value >= 0, "text-neg": shown().value < 0 }}
-          >
-            {shown().value >= 0 ? "+" : "−"}$
-            {Math.abs(shown().value).toLocaleString("en-US")}
-          </div>
-          <div class="text-75 text-caption tabular-nums">{shown().time}</div>
-        </>
+      primaryValue={() => (
+        <div
+          class="text-400 font-700 tabular-nums"
+          classList={{ "text-pos": shown().value >= 0, "text-neg": shown().value < 0 }}
+        >
+          {shown().value >= 0 ? "+" : "−"}$
+          {Math.abs(shown().value).toLocaleString("en-US")}
+        </div>
+      )}
+      secondaryValue={() => (
+        <div class="text-75 text-caption tabular-nums">{shown().time}</div>
       )}
       legend={legend}
-      tableHead={["Date", "P&L"]}
-      tableRows={() =>
-        PNL.filter((_, i) => i % 20 === 0 || i === PNL.length - 1).map(p => [
-          p.time,
-          `${p.value >= 0 ? "+" : "−"}$${Math.abs(p.value).toLocaleString("en-US")}`,
-        ])
-      }
     >
       <ChartSurface
         height={HEIGHT}
         ref={el => (container = el)}
-        label="Unrealised profit and loss against cost basis over 180 days of sample data. The table view below lists the same figures."
+        label="Unrealised profit and loss against cost basis over 180 days of sample data."
       />
     </ChartFrame>
   );

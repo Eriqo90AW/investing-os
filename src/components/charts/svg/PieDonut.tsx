@@ -1,24 +1,25 @@
 import { For, createMemo, createSignal } from "solid-js";
 import { ChartFrame, type LegendItem } from "../../ChartFrame";
-import { ChartTip, createTip, pct, slotColor } from "./parts";
+import { ChartTip, createTip, inkOn, pct, slotColor } from "./parts";
 import { SECTOR_MIX, type Slice } from "~/lib/chart-data";
 
-const SIZE = 240;
+const SIZE = 260;
 const R = 104;
-/** The 2px surface gap, expressed as the angle that subtends it at radius R. */
-const GAP = 2 / R;
 
 interface Arc {
   slice: Slice;
   d: string;
+  from: number;
   mid: number;
+  /** Sweep in radians — how much room the slice has to hold a label. */
+  sweep: number;
   color: string;
   share: number;
 }
 
 function arcPath(from: number, to: number, r: number, inner: number): string {
-  const a0 = from + GAP / 2;
-  const a1 = to - GAP / 2;
+  const a0 = from;
+  const a1 = to;
   if (a1 <= a0) return "";
   const c = SIZE / 2;
   const p = (a: number, rad: number) => [
@@ -57,7 +58,9 @@ function useArcs(data: Slice[], inner: number) {
       const arc: Arc = {
         slice,
         d: arcPath(a, a + sweep, R, inner),
+        from: a,
         mid: a + sweep / 2,
+        sweep,
         color: slotColor(slice.slot),
         share: (slice.value / total) * 100,
       };
@@ -88,18 +91,20 @@ interface WheelProps {
 
 function Wheel(props: WheelProps) {
   const arcs = useArcs(SECTOR_MIX, props.inner);
-  const { tip, setTip, clear } = createTip();
+  const { tip, clear, at } = createTip();
   const [active, setActive] = createSignal<string | null>(null);
 
   function show(arc: Arc, e: { currentTarget: SVGElement }) {
-    const box = (e.currentTarget.ownerSVGElement ?? e.currentTarget).getBoundingClientRect();
-    const scale = box.width / SIZE;
     setActive(arc.slice.label);
-    setTip({
-      x: (SIZE / 2 + Math.cos(arc.mid) * R * 0.66) * scale,
-      y: (SIZE / 2 + Math.sin(arc.mid) * R * 0.66) * scale,
-      rows: [{ label: arc.slice.label, value: pct(arc.share), color: arc.color }],
-    });
+    at(
+      e,
+      {
+        x: SIZE / 2 + Math.cos(arc.mid) * R * 0.66,
+        y: SIZE / 2 + Math.sin(arc.mid) * R * 0.66,
+        width: SIZE,
+      },
+      { rows: [{ label: arc.slice.label, value: pct(arc.share), color: arc.color }] },
+    );
   }
 
   return (
@@ -112,7 +117,7 @@ function Wheel(props: WheelProps) {
         role="img"
         aria-label={`Portfolio weight by sector: ${SECTOR_MIX.map(
           s => `${s.label} ${s.value} percent`,
-        ).join(", ")}. The table view below lists the same figures.`}
+        ).join(", ")}.`}
       >
         <For each={arcs()}>
           {arc => (
@@ -141,6 +146,98 @@ function Wheel(props: WheelProps) {
           )}
         </For>
 
+        {/* Constant-width separators avoid the tapered gaps produced by
+            trimming each slice by an angle. */}
+        <For each={arcs()}>
+          {arc => {
+            const c = SIZE / 2;
+            const inner = props.inner > 0 ? props.inner : 0;
+            return (
+              <line
+                x1={c + Math.cos(arc.from) * inner}
+                y1={c + Math.sin(arc.from) * inner}
+                x2={c + Math.cos(arc.from) * R}
+                y2={c + Math.sin(arc.from) * R}
+                stroke="var(--c-color-surface-1)"
+                stroke-width="2"
+                class="pointer-events-none"
+              />
+            );
+          }}
+        </For>
+
+        {/* The percentages, set on the slices themselves - the number is most
+            of the reason anyone looks at a pie, so it rides the mark rather
+            than living only in the legend.
+
+            A slice takes an inline label only when its own geometry can hold
+            one: the label sits at the sweep's midpoint on the band's midline,
+            and the chord there has to be wider than the text. Anything thinner
+            gets the number just outside on a leader line instead of being
+            crammed in or dropped. */}
+        <For each={arcs()}>
+          {arc => {
+            const radius = props.inner > 0 ? (R + props.inner) / 2 : R * 0.62;
+            const chord = 2 * radius * Math.sin(Math.min(arc.sweep, Math.PI) / 2);
+            const band = props.inner > 0 ? R - props.inner : R;
+            const fits = chord > 34 && band > 26;
+            const cx = SIZE / 2 + Math.cos(arc.mid) * radius;
+            const cy = SIZE / 2 + Math.sin(arc.mid) * radius;
+
+            if (fits) {
+              return (
+                <text
+                  x={cx}
+                  y={cy}
+                  text-anchor="middle"
+                  dominant-baseline="middle"
+                  fill={inkOn(arc.color)}
+                  class="pointer-events-none"
+                  style={{
+                    "font-size": "12px",
+                    "font-weight": 700,
+                    "font-variant-numeric": "tabular-nums",
+                  }}
+                >
+                  {arc.share.toFixed(1)}%
+                </text>
+              );
+            }
+
+            const right = Math.cos(arc.mid) >= 0;
+            const ex = SIZE / 2 + Math.cos(arc.mid) * (R + 3);
+            const ey = SIZE / 2 + Math.sin(arc.mid) * (R + 3);
+            const tx = ex + (right ? 11 : -11);
+            return (
+              <>
+                <line
+                  x1={ex}
+                  y1={ey}
+                  x2={tx}
+                  y2={ey}
+                  stroke="var(--c-chart-crosshair)"
+                  stroke-width="1"
+                />
+                <text
+                  x={tx + (right ? 3 : -3)}
+                  y={ey}
+                  text-anchor={right ? "start" : "end"}
+                  dominant-baseline="middle"
+                  fill="var(--c-color-text-secondary)"
+                  class="pointer-events-none"
+                  style={{
+                    "font-size": "11px",
+                    "font-weight": 600,
+                    "font-variant-numeric": "tabular-nums",
+                  }}
+                >
+                  {arc.share.toFixed(1)}%
+                </text>
+              </>
+            );
+          }}
+        </For>
+
         {props.center && (
           <>
             <text
@@ -164,7 +261,7 @@ function Wheel(props: WheelProps) {
           </>
         )}
       </svg>
-      <ChartTip state={tip()} width={SIZE} />
+      <ChartTip state={tip()} />
     </div>
   );
 }
@@ -182,10 +279,8 @@ export function PieShare() {
   return (
     <ChartFrame
       title="Portfolio weight by sector"
-      note="Part-to-whole, at a glance only. Five segments is the cap: four categorical slots plus the de-emphasised tail. For ranking close values, use bars."
+      note="Part-to-whole, at a glance only. Five segments is the cap: four categorical slots plus the de-emphasised tail. A slice too thin to hold its percentage gets it on a leader line rather than losing it."
       legend={() => legendOf(SECTOR_MIX)}
-      tableHead={["Sector", "Weight", "Value"]}
-      tableRows={() => tableOf(SECTOR_MIX)}
     >
       <Wheel inner={0} />
     </ChartFrame>
@@ -203,8 +298,6 @@ export function DonutShare() {
       title="Portfolio weight by sector · donut"
       note="Identical geometry to the pie, minus the middle — which is the point: the hole carries the total the slices add up to."
       legend={() => legendOf(SECTOR_MIX)}
-      tableHead={["Sector", "Weight", "Value"]}
-      tableRows={() => tableOf(SECTOR_MIX)}
     >
       <Wheel inner={66} center={() => ({ value: "$1.06M", label: "Total invested" })} />
     </ChartFrame>

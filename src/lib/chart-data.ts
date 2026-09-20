@@ -34,22 +34,28 @@ export interface ShareNode {
   /** Percent of the sector's total market cap. The set sums to 100. */
   share: number;
   cap: string;
+  /** One-day change, percent. The treemap's second variable. */
+  change: number;
 }
 
 /**
  * Market share of a sector, for the treemap. Deliberately top-heavy: one name
  * at 41% is the case the form exists to show, and it is the case a pie handles
  * worst.
+ *
+ * Two variables, because a treemap has two channels. Area carries `share`; hue
+ * carries `change`. Colouring by `share` as well would spend the one free
+ * channel restating what the tile sizes already say.
  */
 export const MARKET_SHARE: ShareNode[] = [
-  { label: "Nvidia", ticker: "NVDA", share: 41.2, cap: "$4.38T" },
-  { label: "Apple", ticker: "AAPL", share: 18.7, cap: "$1.99T" },
-  { label: "Microsoft", ticker: "MSFT", share: 14.3, cap: "$1.52T" },
-  { label: "Broadcom", ticker: "AVGO", share: 9.1, cap: "$968B" },
-  { label: "AMD", ticker: "AMD", share: 6.4, cap: "$681B" },
-  { label: "Qualcomm", ticker: "QCOM", share: 4.2, cap: "$447B" },
-  { label: "Arm", ticker: "ARM", share: 3.3, cap: "$351B" },
-  { label: "Micron", ticker: "MU", share: 2.8, cap: "$298B" },
+  { label: "Nvidia", ticker: "NVDA", share: 41.2, cap: "$4.38T", change: 3.12 },
+  { label: "Apple", ticker: "AAPL", share: 18.7, cap: "$1.99T", change: -0.74 },
+  { label: "Microsoft", ticker: "MSFT", share: 14.3, cap: "$1.52T", change: 1.05 },
+  { label: "Broadcom", ticker: "AVGO", share: 9.1, cap: "$968B", change: 4.38 },
+  { label: "AMD", ticker: "AMD", share: 6.4, cap: "$681B", change: -2.91 },
+  { label: "Qualcomm", ticker: "QCOM", share: 4.2, cap: "$447B", change: 0.42 },
+  { label: "Arm", ticker: "ARM", share: 3.3, cap: "$351B", change: -4.16 },
+  { label: "Micron", ticker: "MU", share: 2.8, cap: "$298B", change: 2.27 },
 ];
 
 export interface Mover {
@@ -164,32 +170,3 @@ export const RISK_RETURN: RiskPoint[] = [
   { label: "Analog Dev.", ticker: "ADI", risk: 26.3, ret: 13.5, slot: null },
   { label: "Marvell", ticker: "MRVL", risk: 47.7, ret: 19.2, slot: null },
 ];
-
-export interface Bin {
-  /** Lower edge of the bin, in percent daily return. */
-  from: number;
-  to: number;
-  count: number;
-}
-
-/**
- * Distribution of daily returns over 756 sessions. Fat-tailed and slightly
- * left-skewed, like the real thing.
- */
-export const RETURN_BINS: Bin[] = [
-  { from: -6, to: -5, count: 4 },
-  { from: -5, to: -4, count: 9 },
-  { from: -4, to: -3, count: 21 },
-  { from: -3, to: -2, count: 48 },
-  { from: -2, to: -1, count: 96 },
-  { from: -1, to: 0, count: 168 },
-  { from: 0, to: 1, count: 182 },
-  { from: 1, to: 2, count: 111 },
-  { from: 2, to: 3, count: 62 },
-  { from: 3, to: 4, count: 30 },
-  { from: 4, to: 5, count: 16 },
-  { from: 5, to: 6, count: 9 },
-];
-
-/** Mean daily return, drawn as the reference rule on the histogram. */
-export const RETURN_MEAN = 0.08;

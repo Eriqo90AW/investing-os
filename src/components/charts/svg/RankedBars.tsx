@@ -1,13 +1,13 @@
 import { For, createMemo } from "solid-js";
 import { ChartFrame } from "../../ChartFrame";
-import { AxisText, ChartTip, barPath, createTip, signed } from "./parts";
+import { AxisText, ChartCanvas, ChartTip, barPath, createTip, signed } from "./parts";
 import { MOVERS } from "~/lib/chart-data";
 
-const W = 620;
+const W = 900;
 const ROW = 30;
 const BAR = 18; // <= 24px: the band's leftover is air, not mark
-const LABEL_W = 104;
-const VALUE_W = 56;
+const LABEL_W = 120;
+const VALUE_W = 78;
 const PAD_T = 26;
 
 /**
@@ -26,7 +26,7 @@ export function RankedBars() {
   const domain = createMemo(() => Math.max(...MOVERS.map(m => Math.abs(m.change))) * 1.12);
   const scale = (v: number) => (v / domain()) * (plotW / 2);
 
-  const { tip, setTip, clear } = createTip();
+  const { tip, clear, at } = createTip();
 
   /**
    * Every bar is already direct-labelled with its value, so the tooltip is not
@@ -40,30 +40,26 @@ export function RankedBars() {
     color: string,
     e: { currentTarget: SVGElement },
   ) {
-    const svg = e.currentTarget.ownerSVGElement ?? e.currentTarget;
-    const s = svg.getBoundingClientRect().width / W;
-    setTip({
-      x: (up ? zero + len : zero - len) * s,
-      y: y * s,
-      rows: [{ label: m.label, value: signed(m.change), color }],
-    });
+    at(
+      e,
+      { x: up ? zero + len : zero - len, y, width: W },
+      { rows: [{ label: m.label, value: signed(m.change), color }] },
+    );
   }
 
   return (
     <ChartFrame
       title="Today's movers"
       note="Sorted, on one shared baseline, diverging around zero. The honest form whenever the question is ranking rather than share."
-      tableHead={["Company", "Change"]}
-      tableRows={() => MOVERS.map(m => [`${m.label} (${m.ticker})`, signed(m.change)])}
     >
-      <div class="relative">
+      <ChartCanvas width={W}>
         <svg
           viewBox={`0 0 ${W} ${H}`}
           class="w-full h-auto block overflow-visible"
           role="img"
           aria-label={`Daily change by company: ${MOVERS.map(
             m => `${m.label} ${m.change > 0 ? "up" : "down"} ${Math.abs(m.change)} percent`,
-          ).join(", ")}. The table view below lists the same figures.`}
+          ).join(", ")}.`}
         >
           {/* The zero rule is the baseline every bar grows from — it carries
               more meaning than a grid, so it is the only vertical line here. */}
@@ -135,8 +131,8 @@ export function RankedBars() {
             }}
           </For>
         </svg>
-        <ChartTip state={tip()} width={W} />
-      </div>
+        <ChartTip state={tip()} />
+      </ChartCanvas>
     </ChartFrame>
   );
 }

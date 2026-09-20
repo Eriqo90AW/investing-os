@@ -6,12 +6,17 @@ function Delta(props: { value: number }) {
   const up = () => props.value >= 0;
   return (
     <span
-      class="font-600 tabular-nums"
+      class="inline-flex items-baseline justify-end gap-[3px] font-600 tabular-nums whitespace-nowrap"
       classList={{ "text-pos": up(), "text-neg": !up() }}
     >
-      <span aria-hidden="true">{up() ? "▲" : "▼"}</span>{" "}
-      <span class="sr-only">{up() ? "up" : "down"} </span>
-      {Math.abs(props.value).toFixed(2)}%
+      {/* The glyph is the non-colour half of the direction encoding, so it has
+          to stay welded to the number it qualifies — inline-flex + nowrap, not
+          two inline spans the line box is free to break between. */}
+      <span aria-hidden="true" class="text-50 leading-none">
+        {up() ? "▲" : "▼"}
+      </span>
+      <span class="sr-only">{up() ? "up" : "down"}</span>
+      <span>{Math.abs(props.value).toFixed(2)}%</span>
     </span>
   );
 }

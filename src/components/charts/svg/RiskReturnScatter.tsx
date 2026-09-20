@@ -1,13 +1,15 @@
 import { For, createMemo } from "solid-js";
 import { ChartFrame } from "../../ChartFrame";
-import { AxisText, ChartTip, GridLine, createTip, signed, slotColor } from "./parts";
+import { AxisText, ChartCanvas, ChartTip, GridLine, createTip, signed, slotColor } from "./parts";
 import { RISK_RETURN } from "~/lib/chart-data";
 
 const W = 620;
 const H = 340;
 const PAD = { top: 16, right: 16, bottom: 46, left: 52 };
 const R = 6; // >= 8px mark
-const HIT = 14; // transparent hit radius — 28px across, comfortably clickable
+/** Transparent hit radius. ~31px across at full width — the ~24px floor with
+    room to spare, since the mark itself is only 12px. */
+const HIT = 16;
 
 /**
  * Risk against return. Two measures, two axes — which is not the dual-axis
@@ -40,7 +42,7 @@ export function RiskReturnScatter() {
     return out;
   });
 
-  const { tip, setTip, clear } = createTip();
+  const { tip, clear, at } = createTip();
 
   /**
    * Direct labels ride to the right of their dot, except where that would lay
@@ -69,21 +71,13 @@ export function RiskReturnScatter() {
         })),
         { label: "Rest of sector", color: "var(--c-chart-other)" },
       ]}
-      tableHead={["Company", "Volatility", "Return"]}
-      tableRows={() =>
-        RISK_RETURN.map(p => [
-          `${p.label} (${p.ticker})`,
-          `${p.risk.toFixed(1)}%`,
-          signed(p.ret, 1),
-        ])
-      }
     >
-      <div class="relative">
+      <ChartCanvas width={W}>
         <svg
           viewBox={`0 0 ${W} ${H}`}
           class="w-full h-auto block overflow-visible"
           role="img"
-          aria-label={`Annualised volatility against annualised return for ${RISK_RETURN.length} semiconductor companies. The table view below lists every pair.`}
+          aria-label={`Annualised volatility against annualised return for ${RISK_RETURN.length} semiconductor companies.`}
         >
           <For each={yTicks()}>
             {t => (
@@ -123,19 +117,18 @@ export function RiskReturnScatter() {
           <For each={[...RISK_RETURN].sort((a, b) => (a.slot === null ? -1 : 1))}>
             {p => {
               const color = slotColor(p.slot);
-              const show = (e: { currentTarget: SVGElement }) => {
-                const svg = e.currentTarget.ownerSVGElement!;
-                const s = svg.getBoundingClientRect().width / W;
-                setTip({
-                  x: x(p.risk) * s,
-                  y: (y(p.ret) - R) * s,
-                  title: p.ticker,
-                  rows: [
-                    { label: "return", value: signed(p.ret, 1), color },
-                    { label: "volatility", value: `${p.risk.toFixed(1)}%` },
-                  ],
-                });
-              };
+              const show = (e: { currentTarget: SVGElement }) =>
+                at(
+                  e,
+                  { x: x(p.risk), y: y(p.ret) - R, width: W },
+                  {
+                    title: p.ticker,
+                    rows: [
+                      { label: "return", value: signed(p.ret, 1), color },
+                      { label: "volatility", value: `${p.risk.toFixed(1)}%` },
+                    ],
+                  },
+                );
               return (
                 <g
                   tabindex="0"
@@ -176,8 +169,8 @@ export function RiskReturnScatter() {
             }}
           </For>
         </svg>
-        <ChartTip state={tip()} width={W} />
-      </div>
+        <ChartTip state={tip()} />
+      </ChartCanvas>
     </ChartFrame>
   );
 }

@@ -1,13 +1,13 @@
 import { For, createMemo } from "solid-js";
 import { ChartFrame } from "../../ChartFrame";
-import { ChartTip, createTip, divColor, inkOn, signed } from "./parts";
+import { ChartCanvas, ChartTip, createTip, divColor, inkOn, signed } from "./parts";
 import { MONTHLY_RETURNS, MONTHS } from "~/lib/chart-data";
 
-const CELL = 44;
-const CELL_H = 32;
+const CELL = 60;
+const CELL_H = 36;
 const GAP = 2; // surface gap, same width everywhere
-const LABEL_W = 44;
-const HEAD_H = 20;
+const LABEL_W = 48;
+const HEAD_H = 22;
 const W = LABEL_W + MONTHS.length * CELL;
 const H = HEAD_H + MONTHLY_RETURNS.length * CELL_H + 4;
 
@@ -21,39 +21,40 @@ const H = HEAD_H + MONTHLY_RETURNS.length * CELL_H + 4;
  * A month that hasn't closed is a hole in the grid, never a zero-coloured cell.
  */
 export function ReturnsHeatmap() {
-  const scale = createMemo(() =>
-    Math.max(
+  /**
+   * Snapped up to an even number so the band boundary (half of it) lands on a
+   * clean figure. Without the snap the legend has to round and then states a
+   * threshold the chart isn't using — a −4.8% cell sitting in the "≤ −5%" band.
+   */
+  const scale = createMemo(() => {
+    const peak = Math.max(
       ...MONTHLY_RETURNS.flatMap(r => r.months.map(m => Math.abs(m ?? 0))),
-    ),
-  );
-  const { tip, setTip, clear } = createTip();
+    );
+    return Math.max(2, Math.ceil(peak / 2) * 2);
+  });
+  const edge = () => scale() / 2;
+  const { tip, clear, at } = createTip();
 
   return (
     <ChartFrame
       title="Monthly total return"
       note="Diverging, centred on zero, with the reserved direction pair at the poles and a neutral grey in the middle. Unclosed months are left empty rather than drawn as flat."
       legend={() => [
-        { label: `≤ −${(scale() / 2).toFixed(0)}%`, color: "var(--c-chart-div-neg-2)" },
-        { label: "below flat", color: "var(--c-chart-div-neg-1)" },
-        { label: "above flat", color: "var(--c-chart-div-pos-1)" },
-        { label: `≥ +${(scale() / 2).toFixed(0)}%`, color: "var(--c-chart-div-pos-2)" },
+        { label: `≤ −${edge()}%`, color: "var(--c-chart-div-neg-2)" },
+        { label: `−${edge()}% to 0`, color: "var(--c-chart-div-neg-1)" },
+        { label: "flat", color: "var(--c-chart-div-mid)" },
+        { label: `0 to +${edge()}%`, color: "var(--c-chart-div-pos-1)" },
+        { label: `≥ +${edge()}%`, color: "var(--c-chart-div-pos-2)" },
       ]}
-      tableHead={["Year", ...MONTHS]}
-      tableRows={() =>
-        MONTHLY_RETURNS.map(r => [
-          String(r.year),
-          ...r.months.map(m => (m === null ? "—" : signed(m, 1))),
-        ])
-      }
     >
-      <div class="relative overflow-x-auto">
+      <ChartCanvas width={W}>
         <svg
           viewBox={`0 0 ${W} ${H}`}
-          class="h-auto block min-w-[560px] w-full"
+          class="h-auto block w-full"
           role="img"
           aria-label={`Monthly total return by year, ${MONTHLY_RETURNS[0]!.year} to ${
             MONTHLY_RETURNS[MONTHLY_RETURNS.length - 1]!.year
-          }. The table view below lists every figure.`}
+          }.`}
         >
           <For each={MONTHS}>
             {(m, i) => (
@@ -101,31 +102,24 @@ export function ReturnsHeatmap() {
                       );
                     }
                     const fill = divColor(value, scale());
+                    const showTip = (e: { currentTarget: SVGElement }) =>
+                      at(
+                        e,
+                        { x: x() + CELL / 2, y: y(), width: W },
+                        {
+                          title: `${MONTHS[mi()]} ${row.year}`,
+                          rows: [
+                            { label: "total return", value: signed(value, 1), color: fill },
+                          ],
+                        },
+                      );
                     return (
                       <g
                         tabindex="0"
                         class="outline-none cursor-pointer"
-                        onPointerEnter={e => {
-                          const svg = e.currentTarget.ownerSVGElement!;
-                          const s = svg.getBoundingClientRect().width / W;
-                          setTip({
-                            x: (x() + CELL / 2) * s,
-                            y: y() * s,
-                            title: `${MONTHS[mi()]} ${row.year}`,
-                            rows: [{ label: "total return", value: signed(value, 1), color: fill }],
-                          });
-                        }}
+                        onPointerEnter={showTip}
                         onPointerLeave={clear}
-                        onFocus={e => {
-                          const svg = e.currentTarget.ownerSVGElement!;
-                          const s = svg.getBoundingClientRect().width / W;
-                          setTip({
-                            x: (x() + CELL / 2) * s,
-                            y: y() * s,
-                            title: `${MONTHS[mi()]} ${row.year}`,
-                            rows: [{ label: "total return", value: signed(value, 1), color: fill }],
-                          });
-                        }}
+                        onFocus={showTip}
                         onBlur={clear}
                       >
                         <title>
@@ -146,7 +140,7 @@ export function ReturnsHeatmap() {
                           text-anchor="middle"
                           dominant-baseline="middle"
                           fill={inkOn(fill)}
-                          style={{ "font-size": "10px", "font-variant-numeric": "tabular-nums" }}
+                          style={{ "font-size": "11px", "font-variant-numeric": "tabular-nums" }}
                         >
                           {value.toFixed(1)}
                         </text>
@@ -158,8 +152,8 @@ export function ReturnsHeatmap() {
             )}
           </For>
         </svg>
-        <ChartTip state={tip()} width={W} />
-      </div>
+        <ChartTip state={tip()} />
+      </ChartCanvas>
     </ChartFrame>
   );
 }

@@ -1,12 +1,12 @@
 import { For } from "solid-js";
 import { ChartFrame, type LegendItem } from "../../ChartFrame";
-import { ChartTip, createTip, inkOn, pct, slotColor } from "./parts";
+import { ChartCanvas, ChartTip, createTip, inkOn, pct, slotColor } from "./parts";
 import { ALLOCATION_BY_QUARTER, ALLOCATION_PARTS } from "~/lib/chart-data";
 
-const W = 620;
+const W = 900;
 const ROW = 52;
 const BAR = 24; // the cap, not a target
-const LABEL_W = 66;
+const LABEL_W = 78;
 const GAP = 2; // the surface gap — white does the separating, not a stroke
 
 /**
@@ -21,7 +21,7 @@ const GAP = 2; // the surface gap — white does the separating, not a stroke
 export function AllocationStack() {
   const H = ALLOCATION_BY_QUARTER.length * ROW + 12;
   const plotW = W - LABEL_W - 8;
-  const { tip, setTip, clear } = createTip();
+  const { tip, clear, at } = createTip();
 
   const legend = (): LegendItem[] =>
     ALLOCATION_PARTS.map((label, i) => ({
@@ -34,12 +34,8 @@ export function AllocationStack() {
       title="Allocation drift by quarter"
       note="100% stacked bars. Same five parts as the pie, but four periods deep — the shape of the change is the story, not any single slice."
       legend={legend}
-      tableHead={["Quarter", ...ALLOCATION_PARTS]}
-      tableRows={() =>
-        ALLOCATION_BY_QUARTER.map(r => [r.label, ...r.parts.map(p => pct(p))])
-      }
     >
-      <div class="relative">
+      <ChartCanvas width={W}>
         <svg
           viewBox={`0 0 ${W} ${H}`}
           class="w-full h-auto block overflow-visible"
@@ -49,7 +45,7 @@ export function AllocationStack() {
               `${r.label}: ${r.parts
                 .map((p, i) => `${ALLOCATION_PARTS[i]} ${p} percent`)
                 .join(", ")}`,
-          ).join(". ")}. The table view below lists the same figures.`}
+          ).join(". ")}.`}
         >
           <For each={ALLOCATION_BY_QUARTER}>
             {(row, ri) => {
@@ -78,32 +74,20 @@ export function AllocationStack() {
                       cursor += full;
                       const color = slotColor(isLast ? null : pi());
                       const label = ALLOCATION_PARTS[pi()]!;
+                      const showTip = (e: { currentTarget: SVGElement }) =>
+                        at(
+                          e,
+                          { x: x + w / 2, y: y(), width: W },
+                          { title: row.label, rows: [{ label, value: pct(part), color }] },
+                        );
 
                       return (
                         <g
                           tabindex="0"
                           class="outline-none cursor-pointer"
-                          onPointerEnter={e => {
-                            const svg = e.currentTarget.ownerSVGElement!;
-                            const s = svg.getBoundingClientRect().width / W;
-                            setTip({
-                              x: (x + w / 2) * s,
-                              y: y() * s,
-                              title: row.label,
-                              rows: [{ label, value: pct(part), color }],
-                            });
-                          }}
+                          onPointerEnter={e => showTip(e)}
                           onPointerLeave={clear}
-                          onFocus={e => {
-                            const svg = e.currentTarget.ownerSVGElement!;
-                            const s = svg.getBoundingClientRect().width / W;
-                            setTip({
-                              x: (x + w / 2) * s,
-                              y: y() * s,
-                              title: row.label,
-                              rows: [{ label, value: pct(part), color }],
-                            });
-                          }}
+                          onFocus={e => showTip(e)}
                           onBlur={clear}
                         >
                           <title>
@@ -146,8 +130,8 @@ export function AllocationStack() {
             }}
           </For>
         </svg>
-        <ChartTip state={tip()} width={W} />
-      </div>
+        <ChartTip state={tip()} />
+      </ChartCanvas>
     </ChartFrame>
   );
 }

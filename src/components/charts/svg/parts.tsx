@@ -21,6 +21,12 @@ export function slotColor(slot: number | null): string {
  * Magnitude. `t` is 0..1. Four steps: enough to read as an order, few enough
  * that adjacent classes never blur, and — the binding constraint — few enough
  * that every step can clear 4.5:1 against one of the two label inks.
+ *
+ * No figure currently uses it. The treemap did, until colouring tiles by the
+ * same variable their area encodes turned out to be a double-encode; it now
+ * carries change on the diverging scale instead. The ramp stays defined and is
+ * demonstrated on the spec page, for the ordered-category case that will want
+ * it (tiers, funnel stages, age bands) — it is not a leftover.
  */
 export function seqColor(t: number): string {
   const step = Math.min(4, Math.max(1, Math.ceil(t * 4) || 1));
@@ -47,19 +53,49 @@ export function divColor(value: number, scale: number): string {
  * theme, so this only has to name it.
  */
 export function inkOn(fill: string): string {
-  return fill.replace("--c-chart-", "--c-chart-on-");
+  const token = fill.replace(/^var\((--c-chart-)([\w-]+)\)$/, "--c-chart-on-$2");
+  // A fill with no `on-` partner (someone passing a direction token, say) would
+  // otherwise resolve to nothing and paint black — illegible in dark mode.
+  return `var(${token}, var(--c-color-text-primary))`;
 }
 
-export interface TipState {
-  x: number;
-  y: number;
+export interface TipContent {
   rows: { label: string; value: string; color?: string }[];
   title?: string;
 }
 
+export interface TipState extends TipContent {
+  /** Pixels, relative to the chart's positioned wrapper. */
+  x: number;
+  y: number;
+  /** The SVG's rendered width in px — what the clamp has to measure against. */
+  w: number;
+}
+
 export function createTip() {
   const [tip, setTip] = createSignal<TipState | null>(null);
-  return { tip, setTip, clear: () => setTip(null) };
+
+  /**
+   * Places the tip from a point in *viewBox* coordinates.
+   *
+   * The conversion has to happen here rather than in the tip: the SVG scales
+   * to its container, so the same viewBox point is a different pixel offset at
+   * every width, and the clamp that keeps the tip on-screen needs the rendered
+   * width in the same units as the offset. Passing one of each is the bug this
+   * exists to prevent.
+   */
+  function at(
+    e: { currentTarget: SVGElement },
+    view: { x: number; y: number; width: number },
+    content: TipContent,
+  ): void {
+    const svg = e.currentTarget.ownerSVGElement ?? e.currentTarget;
+    const w = svg.getBoundingClientRect().width;
+    const scale = w / view.width;
+    setTip({ ...content, x: view.x * scale, y: view.y * scale, w });
+  }
+
+  return { tip, setTip, clear: () => setTip(null), at };
 }
 
 /**
@@ -68,9 +104,10 @@ export function createTip() {
  * they are on and want the number. Identity is a short stroke of the series
  * colour, never coloured text.
  *
- * It enhances and never gates: everything in here is also in the table view.
+ * Keyboard focus shows the same readout as hover, so the tip is not a
+ * pointer-only channel.
  */
-export function ChartTip(props: { state: TipState | null; width: number }) {
+export function ChartTip(props: { state: TipState | null }) {
   return (
     <Show when={props.state}>
       {state => (
@@ -79,7 +116,7 @@ export function ChartTip(props: { state: TipState | null; width: number }) {
           aria-live="polite"
           class="pointer-events-none absolute z-20 min-w-[128px] rounded-100 border border-line bg-surface-1 px-150 py-100 shadow-overlay"
           style={{
-            left: `${Math.min(Math.max(state().x, 72), props.width - 72)}px`,
+            left: `${Math.min(Math.max(state().x, 72), Math.max(72, state().w - 72))}px`,
             top: `${state().y}px`,
             transform: "translate(-50%, calc(-100% - 10px))",
           }}
@@ -108,9 +145,22 @@ export function ChartTip(props: { state: TipState | null; width: number }) {
   );
 }
 
-/** Positions the tip layer over a chart without disturbing SVG layout. */
-export function TipLayer(props: { children: JSX.Element }) {
-  return <div class="relative">{props.children}</div>;
+/**
+ * Wrapper for an SVG figure: positions the tip layer, and — the part that
+ * matters — caps the drawing at its own viewBox width.
+ *
+ * An SVG with `width: 100%` scales its *coordinate system*, so a full-width
+ * card stretched a 620-unit viewBox to ~1240px and rendered every 11px label at
+ * 22px. Type inside these charts is specified in the same scale as type outside
+ * them, so the drawing must never be enlarged past 1:1; below that it scales
+ * down with the viewport, which is the direction that degrades gracefully.
+ */
+export function ChartCanvas(props: { width: number; children: JSX.Element }) {
+  return (
+    <div class="relative mx-auto w-full" style={{ "max-width": `${props.width}px` }}>
+      {props.children}
+    </div>
+  );
 }
 
 /** Recessive axis rule — hairline, solid, one step off the surface. */

@@ -11,33 +11,45 @@ export interface LegendItem {
 
 export interface ChartFrameProps {
   title: string;
-  /** One line on what the chart is for — the spec note, not a caption. */
+  /** One line on what the chart is for - the spec note, not a caption. */
   note: string;
-  /** Headline figure, shown at rest and replaced by the hovered value. */
-  hero?: () => JSX.Element;
+  /** Main figure aligned with the title. */
+  primaryValue?: () => JSX.Element;
+  /** Supporting figure aligned with the note. */
+  secondaryValue?: () => JSX.Element;
   legend?: () => LegendItem[];
-  /** Column headers for the table view. */
-  tableHead?: string[];
-  /** Rows for the table view — the non-visual path to the same numbers. */
-  tableRows?: () => (string | number)[][];
   children: JSX.Element;
 }
 
 /**
- * Shared chart container: surface, title block, legend, hover readout and a
- * `<details>` table view. Every chart on the page goes through this so the
- * anatomy stays identical from one figure to the next.
+ * Shared chart container: surface, title block, legend and hover readout. Every
+ * chart on the page goes through this so the anatomy stays identical from one
+ * figure to the next.
+ *
+ * There is no table view. Each chart carries a full `aria-label` naming every
+ * series and value instead, so the numbers still reach a screen reader — but a
+ * sighted reader who cannot separate two hues no longer has a text fallback.
+ * That is a deliberate trade, not an oversight.
  */
 export function ChartFrame(props: ChartFrameProps) {
   return (
     <figure class="m-0 rounded-200 border border-line bg-surface-1 overflow-hidden">
-      <figcaption class="px-250 pt-250 pb-150 flex flex-wrap items-start gap-200 justify-between">
-        <div class="min-w-0">
-          <h4 class="text-300 font-700 leading-[130%]">{props.title}</h4>
-          <p class="mt-50 text-75 text-muted max-w-[52ch]">{props.note}</p>
-        </div>
-        <Show when={props.hero}>
-          <div class="text-right shrink-0 tabular-nums">{props.hero!()}</div>
+      <figcaption class="px-250 pt-250 pb-150 grid grid-cols-[minmax(0,1fr)_auto] grid-rows-[auto_auto] items-baseline gap-x-250 gap-y-50">
+        <h4 class="col-start-1 row-start-1 text-300 font-700 leading-[130%] min-w-0">
+          {props.title}
+        </h4>
+        <Show when={props.primaryValue}>
+          <div class="col-start-2 row-start-1 text-right shrink-0">
+            {props.primaryValue!()}
+          </div>
+        </Show>
+        <p class="col-start-1 row-start-2 mt-0 text-75 text-muted max-w-[62ch]">
+          {props.note}
+        </p>
+        <Show when={props.secondaryValue}>
+          <div class="col-start-2 row-start-2 text-right shrink-0">
+            {props.secondaryValue!()}
+          </div>
         </Show>
       </figcaption>
 
@@ -74,55 +86,6 @@ export function ChartFrame(props: ChartFrameProps) {
 
       <div class="px-250 pb-200">{props.children}</div>
 
-      <Show when={props.tableHead && props.tableRows}>
-        <details class="border-t border-line group">
-          <summary class="px-250 py-150 text-75 font-600 text-muted cursor-pointer select-none hover:text-ink transition-colors marker:content-['']">
-            <span class="inline-block w-3 transition-transform group-open:rotate-90">›</span>
-            Table view
-          </summary>
-          <div class="px-250 pb-250 overflow-x-auto">
-            <table class="w-full text-75 border-collapse tabular-nums">
-              <thead>
-                <tr class="text-muted border-b border-line">
-                  <For each={props.tableHead!}>
-                    {(h, i) => (
-                      <th
-                        scope="col"
-                        class="font-500 py-100 pr-200"
-                        classList={{ "text-right": i() > 0, "text-left": i() === 0 }}
-                      >
-                        {h}
-                      </th>
-                    )}
-                  </For>
-                </tr>
-              </thead>
-              <tbody>
-                <For each={props.tableRows!()}>
-                  {row => (
-                    <tr class="border-b border-line last:border-0">
-                      <For each={row}>
-                        {(cell, i) => (
-                          <td
-                            class="py-100 pr-200"
-                            classList={{
-                              "text-right": i() > 0,
-                              "text-left": i() === 0,
-                              "text-muted": i() === 0,
-                            }}
-                          >
-                            {cell}
-                          </td>
-                        )}
-                      </For>
-                    </tr>
-                  )}
-                </For>
-              </tbody>
-            </table>
-          </div>
-        </details>
-      </Show>
     </figure>
   );
 }

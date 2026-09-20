@@ -1,9 +1,9 @@
 import { For, createMemo } from "solid-js";
 import { ChartFrame } from "../../ChartFrame";
-import { ChartTip, createTip, inkOn, pct, seqColor } from "./parts";
+import { ChartCanvas, ChartTip, createTip, divColor, inkOn, pct, signed } from "./parts";
 import { MARKET_SHARE, type ShareNode } from "~/lib/chart-data";
 
-const SIZE = 320;
+const SIZE = 400;
 /**
  * Half the 2px surface gap — each tile gives this up on every side. A tile
  * narrower than the gap itself (a fraction-of-a-percent name) would otherwise
@@ -96,16 +96,22 @@ interface Tile extends Rect {
   ink: string;
 }
 
+/** Snapped to an even number so the band edge lands on a clean figure. */
+export function changeScale(nodes: ShareNode[]): number {
+  const peak = Math.max(...nodes.map(n => Math.abs(n.change)));
+  return Math.max(2, Math.ceil(peak / 2) * 2);
+}
+
 function layout(nodes: ShareNode[]): Tile[] {
   const total = nodes.reduce((sum, n) => sum + n.share, 0);
   const area = SIZE * SIZE;
   const scaled = nodes.map(n => (n.share / total) * area);
   const rects = squarify(scaled, { x: 0, y: 0, w: SIZE, h: SIZE });
-  const max = Math.max(...nodes.map(n => n.share));
+  const scale = changeScale(nodes);
 
   return rects.map((r, i) => {
     const node = nodes[i]!;
-    const fill = seqColor(node.share / max);
+    const fill = divColor(node.change, scale);
     return { ...r, node, fill, ink: inkOn(fill) };
   });
 }
@@ -116,56 +122,71 @@ function layout(nodes: ShareNode[]): Tile[] {
  * length communicates "share of the whole" as directly as a share of the
  * square does.
  *
- * Colour is sequential, not categorical: the tiles are already told apart by
- * position and size, so hue is free to carry magnitude instead of identity.
- * Nothing here needs eight hues.
+ * **Two variables, two channels.** Area is share; hue is the one-day change, on
+ * the diverging scale. Colouring by share as well would double-encode it —
+ * spending the one free channel to restate what the tile sizes already say,
+ * across categories (companies) with no natural order to ramp along. This is
+ * the market-map idiom for a reason: it answers "who is big" and "who moved"
+ * in a single read.
  */
 export function MarketShareTreemap() {
   const tiles = createMemo(() => layout(MARKET_SHARE));
-  const { tip, setTip, clear } = createTip();
+  const { tip, clear, at } = createTip();
 
   function show(tile: Tile, e: { currentTarget: SVGElement }) {
-    const svg = e.currentTarget.ownerSVGElement ?? e.currentTarget;
-    const scale = svg.getBoundingClientRect().width / SIZE;
-    setTip({
-      x: (tile.x + tile.w / 2) * scale,
-      y: (tile.y + tile.h / 2) * scale,
-      title: tile.node.ticker,
-      rows: [
-        { label: "share", value: pct(tile.node.share), color: tile.fill },
-        { label: "market cap", value: tile.node.cap },
-      ],
-    });
+    at(
+      e,
+      { x: tile.x + tile.w / 2, y: tile.y + tile.h / 2, width: SIZE },
+      {
+        title: tile.node.label,
+        rows: [
+          { label: "today", value: signed(tile.node.change), color: tile.fill },
+          { label: "share", value: pct(tile.node.share) },
+          { label: "market cap", value: tile.node.cap },
+        ],
+      },
+    );
   }
 
   return (
     <ChartFrame
       title="Semiconductor market share"
-      note="Squarified treemap. Area is exactly proportional to share, so one name at 100% fills the square and 90/10 splits it 90/10. Hue carries magnitude, not identity."
-      tableHead={["Company", "Share", "Market cap"]}
-      tableRows={() =>
-        MARKET_SHARE.map(n => [`${n.label} (${n.ticker})`, pct(n.share), n.cap])
-      }
+      note="Squarified treemap: area is exactly proportional to share, so one name at 100% fills the square and 90/10 splits it 90/10. Hue is a second variable — today's move — never a restatement of the size."
+      legend={() => {
+        const edge = changeScale(MARKET_SHARE) / 2;
+        return [
+          { label: `≤ −${edge}%`, color: "var(--c-chart-div-neg-2)" },
+          { label: `−${edge}% to 0`, color: "var(--c-chart-div-neg-1)" },
+          { label: `0 to +${edge}%`, color: "var(--c-chart-div-pos-1)" },
+          { label: `≥ +${edge}%`, color: "var(--c-chart-div-pos-2)" },
+        ];
+      }}
     >
-      <div class="relative mx-auto w-full max-w-[420px]">
+      <ChartCanvas width={SIZE}>
         <svg
           viewBox={`0 0 ${SIZE} ${SIZE}`}
           class="w-full h-auto block rounded-50 overflow-hidden"
           role="img"
-          aria-label={`Semiconductor market share by area: ${MARKET_SHARE.map(
-            n => `${n.label} ${n.share} percent`,
-          ).join(", ")}. The table view below lists the same figures.`}
+          aria-label={`Semiconductor market share by area, shaded by one-day change: ${MARKET_SHARE.map(
+            n =>
+              `${n.label} ${n.share} percent share, ${n.change >= 0 ? "up" : "down"} ${Math.abs(n.change)} percent today`,
+          ).join("; ")}.`}
         >
           <For each={tiles()}>
             {tile => {
               const pad = () => insetFor(tile.w, tile.h);
               const w = () => Math.max(0, tile.w - pad() * 2);
               const h = () => Math.max(0, tile.h - pad() * 2);
-              // Measured against the tile, not guessed: a label that would be
-              // clipped is simply not drawn, and the tooltip and table carry it.
-              const showTicker = () => w() > 44 && h() > 22;
-              const showShare = () => w() > 68 && h() > 40;
-              const showName = () => w() > 104 && h() > 62;
+              // Measured against the tile, not guessed. The share is the
+              // bottom rung of the ladder: it is the value the chart is *about*,
+              // so it is the last label dropped rather than the first. The
+              // ticker joins it once there is a second line's worth of room,
+              // the full name once there is a third.
+              const showShare = () => w() > 34 && h() > 17;
+              const showTicker = () => w() > 48 && h() > 33;
+              const showName = () => w() > 112 && h() > 62;
+              // With no ticker above it, the share sits alone on the first line.
+              const shareY = () => (showTicker() ? 34 : 15);
 
               return (
                 <g
@@ -178,7 +199,8 @@ export function MarketShareTreemap() {
                   onBlur={clear}
                 >
                   <title>
-                    {tile.node.label}: {pct(tile.node.share)} · {tile.node.cap}
+                    {tile.node.label}: {pct(tile.node.share)} share, {signed(tile.node.change)}{" "}
+                    today
                   </title>
                   <rect
                     x={tile.x + pad()}
@@ -191,8 +213,8 @@ export function MarketShareTreemap() {
                   />
                   {showTicker() && (
                     <text
-                      x={tile.x + pad() + 8}
-                      y={tile.y + pad() + 16}
+                      x={tile.x + pad() + 7}
+                      y={tile.y + pad() + 17}
                       fill={tile.ink}
                       style={{ "font-size": "12px", "font-weight": 700 }}
                     >
@@ -201,19 +223,23 @@ export function MarketShareTreemap() {
                   )}
                   {showShare() && (
                     <text
-                      x={tile.x + pad() + 8}
-                      y={tile.y + pad() + 33}
+                      x={tile.x + pad() + 7}
+                      y={tile.y + pad() + shareY()}
                       fill={tile.ink}
-                      opacity="0.9"
-                      style={{ "font-size": "13px", "font-variant-numeric": "tabular-nums" }}
+                      opacity={showTicker() ? 0.92 : 1}
+                      style={{
+                        "font-size": showTicker() ? "13px" : "11px",
+                        "font-weight": showTicker() ? 400 : 700,
+                        "font-variant-numeric": "tabular-nums",
+                      }}
                     >
                       {pct(tile.node.share)}
                     </text>
                   )}
                   {showName() && (
                     <text
-                      x={tile.x + pad() + 8}
-                      y={tile.y + pad() + 50}
+                      x={tile.x + pad() + 7}
+                      y={tile.y + pad() + 51}
                       fill={tile.ink}
                       opacity="0.75"
                       style={{ "font-size": "11px" }}
@@ -226,8 +252,8 @@ export function MarketShareTreemap() {
             }}
           </For>
         </svg>
-        <ChartTip state={tip()} width={420} />
-      </div>
+        <ChartTip state={tip()} />
+      </ChartCanvas>
     </ChartFrame>
   );
 }
