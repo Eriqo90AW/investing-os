@@ -1,5 +1,6 @@
 import { Title, Meta } from "@solidjs/meta";
 import { clientOnly } from "@solidjs/start";
+import { createMemo } from "solid-js";
 import { AppNavbar } from "~/components/navigation/AppNavbar";
 import { MarketPulseStrip } from "~/components/navigation/MarketPulseStrip";
 import {
@@ -11,11 +12,15 @@ import {
   SignalRadar,
 } from "~/components/dashboard/DashboardSections";
 import { SetupOutcomes } from "~/components/dashboard/SetupOutcomes";
+import { AttentionQueue } from "~/components/dashboard/AttentionQueue";
 import { dashboardData } from "~/lib/dashboard-data";
 import { initSetupsStore } from "~/lib/setups-store";
 import { initTheme } from "~/lib/theme";
 import { initPalette } from "~/lib/palette";
 import { initAccent } from "~/lib/accent";
+import { initTradesStore } from "~/lib/trades-store";
+import { trades } from "~/lib/trades-store";
+import { resultForTrade } from "~/lib/trade-analytics";
 
 const PortfolioArea = clientOnly(() => import("~/components/charts/PortfolioArea"));
 
@@ -38,6 +43,20 @@ export default function DashboardPage() {
   initPalette();
   initAccent();
   initSetupsStore();
+  initTradesStore();
+
+  const equityData = createMemo(() => {
+    const closed = trades().filter(trade => trade.status === "closed").sort((a, b) => Date.parse(a.updatedAt) - Date.parse(b.updatedAt));
+    let cumulative = 0;
+    const points: Array<{ time: string; value: number }> = [];
+    for (const trade of closed) {
+      cumulative += resultForTrade(trade).realizedR ?? 0;
+      const time = trade.updatedAt.slice(0, 10);
+      if (points[points.length - 1]?.time === time) points[points.length - 1] = { time, value: cumulative };
+      else points.push({ time, value: cumulative });
+    }
+    return points.length ? points : [{ time: "2026-09-20", value: 0 }];
+  });
 
   return (
     <>
@@ -53,15 +72,18 @@ export default function DashboardPage() {
       <main class="mx-auto max-w-[1440px] px-200 pb-800">
         <DashboardHero asOf={dashboardData.asOf} />
         <KpiGrid kpis={dashboardData.kpis} />
+        <AttentionQueue />
 
         <section id="performance" class="mt-400 scroll-mt-28">
           <div class="grid xl:grid-cols-[minmax(0,2fr)_minmax(320px,.82fr)] gap-200">
             <div class="min-w-0">
               <PerformanceSummary />
               <PortfolioArea
-                title="Net asset value"
-                note="A deterministic 180-session fixture. Hover to inspect the series."
+                data={equityData()}
+                title="Cumulative realized R"
+                note="Closed journal trades after fees, measured against each trade's initial risk."
                 height={300}
+                valueFormatter={(value: number) => `${value >= 0 ? "+" : ""}${value.toFixed(2)}R`}
                 fallback={<ChartSkeleton />}
               />
             </div>

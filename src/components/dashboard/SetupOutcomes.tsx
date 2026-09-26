@@ -1,12 +1,47 @@
 import { For, Show, createMemo, createSignal } from "solid-js";
 import { Trophy } from "lucide-solid";
-import {
-  OUTCOME_RANGES,
-  getOutcomeBuckets,
-  summarizeOutcome,
-  type OutcomeRange,
-} from "~/lib/setup-outcomes";
 import { AxisText, ChartCanvas, GridLine, barPath } from "~/components/charts/svg/parts";
+import { trades } from "~/lib/trades-store";
+import { resultForTrade } from "~/lib/trade-analytics";
+
+type OutcomeRange = "1D" | "7D" | "1M" | "1Y" | "All";
+const OUTCOME_RANGES: { value: OutcomeRange; label: string; full: string }[] = [
+  { value: "1D", label: "1D", full: "Last day" },
+  { value: "7D", label: "7D", full: "Last 7 days" },
+  { value: "1M", label: "1M", full: "Last month" },
+  { value: "1Y", label: "1Y", full: "Last year" },
+  { value: "All", label: "All", full: "All time" },
+];
+interface OutcomeBucket { label: string; wins: number; losses: number; }
+
+function rangeDays(range: OutcomeRange): number | null {
+  if (range === "1D") return 1;
+  if (range === "7D") return 7;
+  if (range === "1M") return 30;
+  if (range === "1Y") return 365;
+  return null;
+}
+
+function outcomeBuckets(range: OutcomeRange): OutcomeBucket[] {
+  const days = rangeDays(range);
+  const cutoff = days === null ? -Infinity : Date.now() - days * 86_400_000;
+  const grouped = new Map<string, OutcomeBucket>();
+  for (const trade of trades().filter(item => item.status === "closed" && Date.parse(item.updatedAt) >= cutoff)) {
+    const label = new Date(trade.updatedAt).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+    const bucket = grouped.get(label) ?? { label, wins: 0, losses: 0 };
+    if (resultForTrade(trade).realizedPnl > 0) bucket.wins += 1;
+    else bucket.losses += 1;
+    grouped.set(label, bucket);
+  }
+  return [...grouped.values()];
+}
+
+function summarizeOutcome(buckets: OutcomeBucket[]) {
+  const wins = buckets.reduce((sum, bucket) => sum + bucket.wins, 0);
+  const losses = buckets.reduce((sum, bucket) => sum + bucket.losses, 0);
+  const closed = wins + losses;
+  return { wins, losses, closed, rate: closed ? wins / closed * 100 : null };
+}
 
 const VB_W = 520;
 const VB_H = 248;
@@ -22,7 +57,7 @@ const LOSS_FILL = "var(--c-chart-down)";
  */
 export function SetupOutcomes() {
   const [range, setRange] = createSignal<OutcomeRange>("7D");
-  const buckets = createMemo(() => getOutcomeBuckets(range()));
+  const buckets = createMemo(() => outcomeBuckets(range()));
   const summary = createMemo(() => summarizeOutcome(buckets()));
   const rangeFull = createMemo(() => OUTCOME_RANGES.find(r => r.value === range())?.full ?? "");
 

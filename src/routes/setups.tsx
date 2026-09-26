@@ -71,7 +71,7 @@ export default function SetupsPage() {
         </section>
 
         <div class="mt-300">
-          <SetupList onEdit={openEdit} />
+          <SetupList onEdit={openEdit} onOpen={id => { window.location.href = `/setup/${id}`; }} />
         </div>
       </main>
 

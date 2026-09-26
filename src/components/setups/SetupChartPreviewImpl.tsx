@@ -4,6 +4,7 @@ import { Minus, MousePointer2, Square, Trash2, Undo2 } from "lucide-solid";
 import { ChartFrame, ChartSurface } from "../ChartFrame";
 import { createThemedChart } from "~/lib/chart-theme";
 import { setupCandles } from "~/lib/setup-generator";
+import type { ChartAnnotation } from "~/lib/investing-types";
 
 const DEFAULT_HEIGHT = 220;
 const RANGES = ["1D", "1W", "1M", "1Y"] as const;
@@ -11,11 +12,13 @@ const RANGE_BARS: Record<(typeof RANGES)[number], number> = { "1D": 2, "1W": 6, 
 const MA_PERIODS = [20, 50, 200] as const;
 type DrawTool = "cursor" | "entry" | "line" | "fib";
 type Point = { x: number; y: number };
-type Drawing = { id: number; tool: Exclude<DrawTool, "cursor">; start: Point; end: Point };
+type Drawing = ChartAnnotation;
 
 export interface SetupChartPreviewProps {
   ticker: string;
   height?: number;
+  annotations?: ChartAnnotation[];
+  onAnnotationsChange?: (annotations: ChartAnnotation[]) => void;
 }
 
 export default function SetupChartPreview(props: SetupChartPreviewProps) {
@@ -27,9 +30,8 @@ export default function SetupChartPreview(props: SetupChartPreviewProps) {
   const [range, setRange] = createSignal<(typeof RANGES)[number]>("1Y");
   const [activeMas, setActiveMas] = createSignal<number[]>([20, 50]);
   const [tool, setTool] = createSignal<DrawTool>("cursor");
-  const [drawings, setDrawings] = createSignal<Drawing[]>([]);
+  const [drawings, setDrawings] = createSignal<Drawing[]>(props.annotations ?? []);
   const [draft, setDraft] = createSignal<Drawing | null>(null);
-  let drawingId = 0;
 
   const allData = createMemo(() => setupCandles(props.ticker, 280));
   const data = createMemo(() => allData().slice(-RANGE_BARS[range()]));
@@ -134,7 +136,12 @@ export default function SetupChartPreview(props: SetupChartPreviewProps) {
     if (tool() === "cursor") return;
     event.currentTarget.setPointerCapture(event.pointerId);
     const point = normalizedPoint(event);
-    setDraft({ id: ++drawingId, tool: tool() as Drawing["tool"], start: point, end: point });
+    setDraft({
+      id: `annotation-${Date.now().toString(36)}`,
+      tool: tool() as Drawing["tool"],
+      start: point,
+      end: point,
+    });
   };
 
   const moveDrawing = (event: ChartPointerEvent) => {
@@ -146,7 +153,11 @@ export default function SetupChartPreview(props: SetupChartPreviewProps) {
   const finishDrawing = (event: ChartPointerEvent) => {
     const current = draft();
     if (!current) return;
-    setDrawings(items => [...items, { ...current, end: normalizedPoint(event) }]);
+    setDrawings(items => {
+      const next = [...items, { ...current, end: normalizedPoint(event) }];
+      props.onAnnotationsChange?.(next);
+      return next;
+    });
     setDraft(null);
   };
 
@@ -169,8 +180,8 @@ export default function SetupChartPreview(props: SetupChartPreviewProps) {
           <ToolButton active={tool() === "entry"} label="Entry area" onClick={() => setTool("entry")}><Square size={14} /></ToolButton>
           <ToolButton active={tool() === "line"} label="Line" onClick={() => setTool("line")}><Minus size={14} /></ToolButton>
           <ToolButton active={tool() === "fib"} label="Fibonacci" onClick={() => setTool("fib")}><span class="font-700">Fib</span></ToolButton>
-          <button type="button" class="grid size-8 place-items-center rounded-100 text-muted hover:bg-surface-2 hover:text-ink disabled:opacity-40" disabled={!drawings().length} aria-label="Undo drawing" onClick={() => setDrawings(items => items.slice(0, -1))}><Undo2 size={14} /></button>
-          <button type="button" class="grid size-8 place-items-center rounded-100 text-muted hover:bg-surface-2 hover:text-neg disabled:opacity-40" disabled={!drawings().length} aria-label="Clear drawings" onClick={() => setDrawings([])}><Trash2 size={14} /></button>
+          <button type="button" class="grid size-8 place-items-center rounded-100 text-muted hover:bg-surface-2 hover:text-ink disabled:opacity-40" disabled={!drawings().length} aria-label="Undo drawing" onClick={() => setDrawings(items => { const next = items.slice(0, -1); props.onAnnotationsChange?.(next); return next; })}><Undo2 size={14} /></button>
+          <button type="button" class="grid size-8 place-items-center rounded-100 text-muted hover:bg-surface-2 hover:text-neg disabled:opacity-40" disabled={!drawings().length} aria-label="Clear drawings" onClick={() => { setDrawings([]); props.onAnnotationsChange?.([]); }}><Trash2 size={14} /></button>
         </div>
         <div class="flex flex-wrap items-center gap-100">
           <div class="flex items-center gap-50" aria-label="Moving averages">

@@ -1,6 +1,8 @@
 import { For, Show, createMemo, createSignal, onCleanup, onMount } from "solid-js";
 import {
   Bell,
+  BarChart3,
+  BookOpen,
   Bot,
   Command,
   Filter,
@@ -19,14 +21,17 @@ import { openSettings } from "~/lib/settings-store";
 const NAV_ITEMS = [
   { label: "Overview", href: "/", icon: LayoutDashboard },
   { label: "Setups", href: "/setups", icon: Target },
+  { label: "Journal", href: "/journal", icon: BookOpen },
+  { label: "Review", href: "/review", icon: BarChart3 },
   { label: "Screener", href: "/screener", icon: Filter },
 ] as const;
 
 const COMMANDS = [
   { label: "Go to overview", detail: "Dashboard KPIs", href: "/" },
   { label: "Open setup workspace", detail: "Create and edit setups", href: "/setups" },
+  { label: "Open trade journal", detail: "Record fills and reviews", href: "/journal" },
+  { label: "Review performance", detail: "Results measured in initial risk", href: "/review" },
   { label: "Open quant screener", detail: "Best setups across universes", href: "/screener" },
-  { label: "Review performance", detail: "Equity curve and risk", href: "/#performance" },
   { label: "Read signal radar", detail: "News and catalysts", href: "/#signals" },
 ] as const;
 

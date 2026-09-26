@@ -11,6 +11,7 @@ export interface PortfolioAreaProps {
   title?: string;
   note?: string;
   height?: number;
+  valueFormatter?: (value: number) => string;
 }
 
 /**
@@ -61,7 +62,7 @@ export function PortfolioArea(props: PortfolioAreaProps = {}) {
       title={props.title ?? "Portfolio net asset value"}
       note={props.note ?? "Single series, 180 days. Since inception, indexed in dollars rather than percent."}
       primaryValue={() => (
-        <div class="text-400 font-700 tabular-nums">{compact(shown().value, "$")}</div>
+        <div class="text-400 font-700 tabular-nums">{props.valueFormatter ? props.valueFormatter(shown().value) : compact(shown().value, "$")}</div>
       )}
       secondaryValue={() => (
         <div

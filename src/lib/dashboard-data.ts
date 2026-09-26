@@ -6,8 +6,8 @@
  * an API without changing the dashboard component tree.
  */
 
-export type Direction = "long" | "short";
-export type SetupStatus = "watching" | "ready" | "active" | "won" | "lost";
+import type { Direction, InvestmentSetup, SetupStatus } from "./investing-types";
+export type { Direction, InvestmentSetup, SetupStatus } from "./investing-types";
 export type SignalImpact = "bullish" | "bearish" | "mixed";
 export type SignalCategory =
   | "macro"
@@ -30,22 +30,6 @@ export interface MarketSnapshot {
   label: string;
   value: string;
   change: number;
-}
-
-export interface InvestmentSetup {
-  id: string;
-  symbol: string;
-  name: string;
-  direction: Direction;
-  status: SetupStatus;
-  score: number;
-  thesis: string;
-  entry: string;
-  invalidation: string;
-  target: string;
-  riskReward: string;
-  catalyst: string;
-  updated: string;
 }
 
 export interface SignalEvent {

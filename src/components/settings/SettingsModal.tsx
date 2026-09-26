@@ -1,9 +1,23 @@
-import { For, Show } from "solid-js";
+import { For, Show, createSignal } from "solid-js";
 import { Modal } from "~/components/ui/Modal";
 import { PALETTES, palette, setPalette } from "~/lib/palette";
 import { mode, resolved, setMode, type ThemeMode } from "~/lib/theme";
 import { accentHex, derived, setAccentHex } from "~/lib/accent";
 import { agentApiKey, agentModel, clearAgentApiKey, setAgentApiKey, setAgentModel, type AgentModel } from "~/lib/agent/store";
+import { downloadBackup, importBackup } from "~/lib/data-backup";
+import { replaceSetups, resetDemoSetups } from "~/lib/setups-store";
+import { replaceTrades, resetDemoTrades } from "~/lib/trades-store";
+import {
+  displayTimezone,
+  fxAsOf,
+  initPreferences,
+  reportingCurrency,
+  setDisplayTimezone,
+  setFxAsOf,
+  setReportingCurrency,
+  setUsdIdrRate,
+  usdIdrRate,
+} from "~/lib/preferences-store";
 
 const MODES: { value: ThemeMode; label: string; detail: string }[] = [
   { value: "light", label: "Light", detail: "Bright grounds" },
@@ -21,7 +35,20 @@ function resetAll(): void {
 }
 
 export function SettingsModal(props: { open: boolean; onClose: () => void }) {
+  initPreferences();
   const accentValue = () => accentHex() ?? "#99e50b";
+  const [backupMessage, setBackupMessage] = createSignal("");
+
+  const restoreBackup = async (file?: File) => {
+    if (!file) return;
+    if (!window.confirm("Replace the current setups and trades with this backup?")) return;
+    try {
+      const counts = await importBackup(file);
+      setBackupMessage(`Imported ${counts.setups} setups and ${counts.trades} trades.`);
+    } catch (error) {
+      setBackupMessage(error instanceof Error ? error.message : "The backup could not be imported.");
+    }
+  };
 
   return (
     <Modal
@@ -193,6 +220,29 @@ export function SettingsModal(props: { open: boolean; onClose: () => void }) {
               distinguishable.
             </p>
           </Show>
+        </section>
+
+        <section aria-labelledby="settings-reporting" class="mt-250 pt-250 border-t border-line">
+          <h3 id="settings-reporting" class="text-50 font-700 uppercase tracking-[.08em] text-caption">Reporting</h3>
+          <div class="mt-150 grid grid-cols-2 gap-100">
+            <label class="text-75 font-600 text-muted">Reporting currency<select class="mt-50 h-10 w-full rounded-100 border border-line bg-surface-2 px-100 text-ink" value={reportingCurrency()} onChange={event => setReportingCurrency(event.currentTarget.value as "USD" | "IDR")}><option value="USD">USD</option><option value="IDR">IDR</option></select></label>
+            <label class="text-75 font-600 text-muted">Display timezone<input class="mt-50 h-10 w-full rounded-100 border border-line bg-surface-2 px-100 text-ink" value={displayTimezone()} onInput={event => setDisplayTimezone(event.currentTarget.value)} /></label>
+            <label class="text-75 font-600 text-muted">USD to IDR rate<input type="number" min="0" class="mt-50 h-10 w-full rounded-100 border border-line bg-surface-2 px-100 text-ink" value={usdIdrRate()} onInput={event => setUsdIdrRate(event.currentTarget.valueAsNumber || 0)} /></label>
+            <label class="text-75 font-600 text-muted">FX rate date<input type="date" class="mt-50 h-10 w-full rounded-100 border border-line bg-surface-2 px-100 text-ink" value={fxAsOf()} onInput={event => setFxAsOf(event.currentTarget.value)} /></label>
+          </div>
+          <p class="mt-100 text-50 text-caption">The FX rate is manual. Analytics continue to use R for cross-market comparisons.</p>
+        </section>
+
+        <section class="mt-250 pt-250 border-t border-line">
+          <h3 class="text-50 font-700 uppercase tracking-[.08em] text-caption">Backup and demo data</h3>
+          <p class="mt-100 text-75 text-muted">Export before clearing browser storage. Screenshot data is included in the backup.</p>
+          <div class="mt-150 flex flex-wrap gap-100">
+            <button type="button" onClick={downloadBackup} class="h-9 rounded-100 border border-line px-150 text-75 font-700 text-ink">Export JSON</button>
+            <label class="inline-flex h-9 cursor-pointer items-center rounded-100 border border-line px-150 text-75 font-700 text-ink">Import JSON<input type="file" accept="application/json" class="sr-only" onChange={event => restoreBackup(event.currentTarget.files?.[0])} /></label>
+            <button type="button" onClick={() => { if (window.confirm("Restore the original demo setups and trades?")) { resetDemoSetups(); resetDemoTrades(); setBackupMessage("Demo data restored."); } }} class="h-9 rounded-100 border border-line px-150 text-75 font-700 text-muted">Reset demo data</button>
+            <button type="button" onClick={() => { if (window.confirm("Delete every local setup and trade? Export a backup first if you need one.")) { replaceSetups([]); replaceTrades([]); setBackupMessage("Local records deleted."); } }} class="h-9 rounded-100 border border-neg bg-neg-bg px-150 text-75 font-700 text-neg">Delete my records</button>
+          </div>
+          <Show when={backupMessage()}><p class="mt-100 text-75 text-muted">{backupMessage()}</p></Show>
         </section>
 
         <section aria-labelledby="settings-agent" class="mt-250 pt-250 border-t border-line">

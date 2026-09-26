@@ -3,6 +3,8 @@ import {
   ArrowDownRight,
   ArrowRight,
   ArrowUpRight,
+  BarChart3,
+  BookOpen,
   Bot,
   CalendarClock,
   CircleDot,
@@ -25,6 +27,8 @@ import {
   statusClasses as sharedStatusClasses,
 } from "~/lib/setups-store";
 import { openAgent } from "~/lib/agent/store";
+import { trades } from "~/lib/trades-store";
+import { summarizeTrades } from "~/lib/trade-analytics";
 import { SentimentGauge, bandFor, SENTIMENT_HISTORY } from "~/components/charts/svg/SentimentGauge";
 
 function KpiSparkline(props: { values: number[]; positive: boolean }) {
@@ -164,35 +168,17 @@ export function MarketSentiment(props: { value: number }) {
 }
 
 export function PerformanceSummary() {
-  const [range, setRange] = createSignal("3M");
-  const ranges = ["1M", "3M", "6M", "YTD", "All"];
+  const summary = createMemo(() => summarizeTrades(trades()));
   return (
     <div class="mb-150 flex flex-col sm:flex-row sm:items-center justify-between gap-150">
       <div>
         <div class="flex items-center gap-100">
-          <h2 class="text-300 font-700 tracking-[-.01em]">Research portfolio</h2>
-          <span class="px-100 py-[2px] rounded-10 bg-pos-bg text-pos text-50 font-700">+18.6%</span>
+          <h2 class="text-300 font-700 tracking-[-.01em]">Journal performance</h2>
+          <span class="px-100 py-[2px] rounded-10 text-50 font-700" classList={{ "bg-pos-bg text-pos": summary().totalR >= 0, "bg-neg-bg text-neg": summary().totalR < 0 }}>{summary().totalR >= 0 ? "+" : ""}{summary().totalR.toFixed(2)}R</span>
         </div>
-        <p class="mt-50 text-75 text-muted">Mock net asset value across tracked positions.</p>
+        <p class="mt-50 text-75 text-muted">Calculated from {summary().sampleSize} closed trade{summary().sampleSize === 1 ? "" : "s"}, including fees.</p>
       </div>
-      <div class="inline-flex self-start items-center p-[3px] rounded-100 border border-line bg-surface-2">
-        <For each={ranges}>
-          {item => (
-            <button
-              type="button"
-              onClick={() => setRange(item)}
-              aria-pressed={range() === item}
-              class="h-7 px-100 rounded-50 text-50 font-700 transition-colors cursor-pointer"
-              classList={{
-                "bg-surface-1 text-ink shadow-tiny": range() === item,
-                "text-muted hover:text-ink": range() !== item,
-              }}
-            >
-              {item}
-            </button>
-          )}
-        </For>
-      </div>
+      <a href="/review" class="self-start text-75 font-700 text-accent">Open full review</a>
     </div>
   );
 }
@@ -369,10 +355,12 @@ export function MobileDock() {
   const items = [
     { label: "Home", href: "/", icon: Gauge },
     { label: "Setups", href: "/setups", icon: Target },
+    { label: "Journal", href: "/journal", icon: BookOpen },
+    { label: "Review", href: "/review", icon: BarChart3 },
     { label: "Screener", href: "/screener", icon: Filter },
   ];
   return (
-    <nav class="md:hidden fixed z-40 left-200 right-200 bottom-200 h-14 px-100 grid grid-cols-4 rounded-300 border border-line bg-bg-2/95 backdrop-blur-xl shadow-overlay" aria-label="Mobile navigation">
+    <nav class="md:hidden fixed z-40 left-100 right-100 bottom-100 h-14 px-50 grid grid-cols-6 rounded-300 border border-line bg-bg-2/95 backdrop-blur-xl shadow-overlay" aria-label="Mobile navigation">
       <For each={items}>
         {item => (
           <a href={item.href} class="flex flex-col items-center justify-center gap-[2px] text-caption hover:text-accent transition-colors">

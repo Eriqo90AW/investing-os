@@ -21,6 +21,8 @@ is how to run it; that file is what every value means.
 pnpm install
 pnpm dev          # dashboard: http://localhost:5180/
                   # setup workspace: http://localhost:5180/setups
+                  # trade journal: http://localhost:5180/journal
+                  # review analytics: http://localhost:5180/review
                   # quant screener: http://localhost:5180/screener
                   # design system: http://localhost:5180/design
 ```
@@ -162,8 +164,13 @@ is what caught the dark accent failing the lightness band as a *mark* while bein
 | `src/routes/design.tsx` | The live design-system reference. |
 | `src/routes/index.tsx` | The mock-data Investing OS dashboard. |
 | `src/routes/setups.tsx` | The setup workspace: create/edit tracked setups and agent-created drafts. |
+| `src/routes/setups/[id].tsx` | Persistent setup detail with evidence, chart annotations, sizing, status history, and linked trades. |
+| `src/routes/journal.tsx` | Manual entry and exit fills, partial exits, fees, screenshots, and trade reviews. |
+| `src/routes/review.tsx` | Journal-derived results by strategy, market, direction, review state, and initial risk. |
 | `src/routes/screener.tsx` | The quant screener across the US, crypto and IHSG universes. |
 | `src/lib/setups-store.ts` | Shared setups store (localStorage-backed) and status/universe metadata. |
+| `src/lib/trades-store.ts` | Versioned local trade journal and review persistence. |
+| `src/lib/trade-analytics.ts` | Realized P&L, R, expectancy, win rate, holding period, and drawdown calculations. |
 | `src/lib/agent/` | Shared agent state, route context snapshots, deterministic local actions, and session-scoped thread persistence. |
 | `src/lib/screener-store.ts` | Saved declarative screener rules created manually or by the agent. |
 | `src/lib/settings-store.ts` | Global settings-modal state, shared by the navbar and the agent panel. |
