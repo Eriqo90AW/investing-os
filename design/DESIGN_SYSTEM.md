@@ -363,6 +363,9 @@ things that genuinely float — dropdowns, tooltips, modals, sticky toolbars.
 
 ## 6. Components
 
+All clickable elements must include the Tailwind `cursor-pointer` utility class.
+This applies to buttons, links, tabs, toggles, clickable rows, and other click targets.
+
 ### 6.1 Global ticker strip
 
 Full-bleed bar above the nav. `font-size-75`, `text-secondary` labels with `text-primary`

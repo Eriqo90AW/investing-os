@@ -358,9 +358,10 @@ export function MobileDock() {
     { label: "Journal", href: "/journal", icon: BookOpen },
     { label: "Review", href: "/review", icon: BarChart3 },
     { label: "Screener", href: "/screener", icon: Filter },
+    { label: "Dividends", href: "/dividends", icon: BarChart3 },
   ];
   return (
-    <nav class="md:hidden fixed z-40 left-100 right-100 bottom-100 h-14 px-50 grid grid-cols-6 rounded-300 border border-line bg-bg-2/95 backdrop-blur-xl shadow-overlay" aria-label="Mobile navigation">
+    <nav class="md:hidden fixed z-40 left-100 right-100 bottom-100 h-14 px-50 grid grid-cols-7 rounded-300 border border-line bg-bg-2/95 backdrop-blur-xl shadow-overlay" aria-label="Mobile navigation">
       <For each={items}>
         {item => (
           <a href={item.href} class="flex flex-col items-center justify-center gap-[2px] text-caption hover:text-accent transition-colors">
@@ -381,3 +382,4 @@ export function MobileDock() {
     </nav>
   );
 }
+

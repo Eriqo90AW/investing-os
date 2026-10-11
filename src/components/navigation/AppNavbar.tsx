@@ -24,6 +24,7 @@ const NAV_ITEMS = [
   { label: "Journal", href: "/journal", icon: BookOpen },
   { label: "Review", href: "/review", icon: BarChart3 },
   { label: "Screener", href: "/screener", icon: Filter },
+  { label: "Dividends", href: "/dividends", icon: BarChart3 },
 ] as const;
 
 const COMMANDS = [
@@ -32,6 +33,7 @@ const COMMANDS = [
   { label: "Open trade journal", detail: "Record fills and reviews", href: "/journal" },
   { label: "Review performance", detail: "Results measured in initial risk", href: "/review" },
   { label: "Open quant screener", detail: "Best setups across universes", href: "/screener" },
+  { label: "Plan IDX dividend trades", detail: "Compare ex-date and recovery exits", href: "/dividends" },
   { label: "Read signal radar", detail: "News and catalysts", href: "/#signals" },
 ] as const;
 
@@ -77,7 +79,7 @@ export function AppNavbar() {
     <>
       <header class="sticky top-0 z-40 border-b border-line bg-bg-2/95 backdrop-blur-xl">
         <div class="mx-auto max-w-[1440px] h-16 px-200 flex items-center gap-200">
-          <A href="/" class="flex items-center gap-100 shrink-0" aria-label="Investing OS home">
+          <A href="/" class="cursor-pointer flex items-center gap-100 shrink-0" aria-label="Investing OS home">
             <span class="relative grid place-items-center w-9 h-9 rounded-100 overflow-hidden shadow-tiny">
               {/* Same mark as the favicon in entry-server.tsx: lime tile, ink spark. */}
               <svg viewBox="0 0 32 32" class="w-9 h-9 block" aria-hidden="true">
@@ -170,7 +172,7 @@ export function AppNavbar() {
             </button>
             <button
               type="button"
-              class="hidden lg:grid place-items-center w-9 h-9 rounded-full bg-surface-2 border border-line text-75 font-700 text-ink"
+              class="cursor-pointer hidden lg:grid place-items-center w-9 h-9 rounded-full bg-surface-2 border border-line text-75 font-700 text-ink"
               aria-label="Open user menu"
             >
               ER
@@ -185,7 +187,7 @@ export function AppNavbar() {
                 <A
                   href={item.href}
                   onClick={() => setMenuOpen(false)}
-                  class="mt-150 h-10 px-150 flex items-center gap-100 rounded-100 bg-surface-2 text-75 font-600 text-ink"
+                  class="cursor-pointer mt-150 h-10 px-150 flex items-center gap-100 rounded-100 bg-surface-2 text-75 font-600 text-ink"
                 >
                   <item.icon size={16} class="text-accent" />
                   {item.label}
@@ -228,7 +230,7 @@ export function AppNavbar() {
                   <a
                     href={item.href}
                     onClick={closePalette}
-                    class="px-150 py-150 flex items-center gap-150 rounded-100 hover:bg-surface-2 transition-colors"
+                    class="cursor-pointer px-150 py-150 flex items-center gap-150 rounded-100 hover:bg-surface-2 transition-colors"
                   >
                     <span class="grid place-items-center w-8 h-8 rounded-100 bg-official-bg text-official"><Sparkles size={15} /></span>
                     <span>
@@ -246,3 +248,4 @@ export function AppNavbar() {
     </>
   );
 }
+

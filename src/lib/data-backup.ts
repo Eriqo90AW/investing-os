@@ -2,16 +2,18 @@ import type { StoredSetup } from "./setups-store";
 import { replaceSetups, setups } from "./setups-store";
 import type { TradeRecord } from "./investing-types";
 import { replaceTrades, trades } from "./trades-store";
+import { dividendStore, restoreDividendData } from "./dividends/store";
 
 interface BackupFile {
   schemaVersion: 1;
   exportedAt: string;
   setups: StoredSetup[];
   trades: TradeRecord[];
+  dividends?: ReturnType<typeof dividendStore>;
 }
 
 export function downloadBackup(): void {
-  const payload: BackupFile = { schemaVersion: 1, exportedAt: new Date().toISOString(), setups: setups(), trades: trades() };
+  const payload: BackupFile = { schemaVersion: 1, exportedAt: new Date().toISOString(), setups: setups(), trades: trades(), dividends: dividendStore() };
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement("a");
@@ -21,7 +23,7 @@ export function downloadBackup(): void {
   URL.revokeObjectURL(url);
 }
 
-export async function importBackup(file: File): Promise<{ setups: number; trades: number }> {
+export async function importBackup(file: File): Promise<{ setups: number; trades: number; dividends: boolean }> {
   const parsed: unknown = JSON.parse(await file.text());
   if (!parsed || typeof parsed !== "object") throw new Error("This file is not an Investing OS backup.");
   const value = parsed as Record<string, unknown>;
@@ -30,5 +32,7 @@ export async function importBackup(file: File): Promise<{ setups: number; trades
   const importedTrades = value.trades.filter(item => item && typeof item === "object" && typeof (item as { id?: unknown }).id === "string") as TradeRecord[];
   replaceSetups(importedSetups);
   replaceTrades(importedTrades);
-  return { setups: importedSetups.length, trades: importedTrades.length };
+  const dividends = restoreDividendData(value.dividends);
+  return { setups: importedSetups.length, trades: importedTrades.length, dividends };
 }
+

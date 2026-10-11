@@ -24,17 +24,17 @@ export function runLocalAgentAction(prompt: string): LocalActionResult {
       "I work from this page without an API key:\n\n" +
       "- **Create a setup draft** — say “Add new setup NVDA”\n" +
       "- **Build a saved screener** — say “Create an oversold screener”\n" +
-      "- **Navigate the workspace** — say “Open the screener”\n\n" +
+      "- **Navigate the workspace** — say “Open the screener” or “Open dividends”\n\n" +
       "With an OpenCode key connected in Settings, I can also answer research questions about the markets on screen.";
     addAgentMessage({ role: "assistant", content, action: "capabilities" });
     return { handled: true, summary: content, action: "capabilities" };
   }
 
-  const navMatch = normalized.match(/^(go to|open|show|navigate to)\b.*?(dashboard|overview|home|setups?|screener)/);
+  const navMatch = normalized.match(/^(go to|open|show|navigate to)\b.*?(dashboard|overview|home|setups?|screener|dividends?)/);
   if (navMatch) {
     const place = navMatch[2] ?? "";
-    const href = /screener/.test(place) ? "/screener" : /setup/.test(place) ? "/setups" : "/";
-    const label = href === "/screener" ? "the screener" : href === "/setups" ? "the setup workspace" : "the overview";
+    const href = /dividend/.test(place) ? "/dividends" : /screener/.test(place) ? "/screener" : /setup/.test(place) ? "/setups" : "/";
+    const label = href === "/dividends" ? "the dividend planner" : href === "/screener" ? "the screener" : href === "/setups" ? "the setup workspace" : "the overview";
     addAgentMessage({ role: "assistant", content: `Opened ${label}.` });
     return { handled: true, navigate: href };
   }
@@ -68,3 +68,4 @@ export function runLocalAgentAction(prompt: string): LocalActionResult {
   });
   return { handled: true, summary, action: "create_setup_draft" };
 }
+
